@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Filament\Admin\Resources;
+
+use App\Filament\Admin\Resources\SaleResource\Pages;
+use App\Models\Sale;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+class SaleResource extends Resource
+{
+    protected static ?string $model = Sale::class;
+
+    protected static ?string $navigationGroup = 'Sales';
+
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+
+    protected static ?int $navigationSort = 50;
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Forms\Components\Select::make('user_id')
+                ->relationship('user', 'name')
+                ->required()
+                ->searchable()
+                ->preload()
+                ->label('Handled By'),
+            Forms\Components\TextInput::make('total_amount')->numeric()->required(),
+            Forms\Components\DateTimePicker::make('sale_date')->required(),
+            Forms\Components\Textarea::make('notes')->columnSpanFull(),
+        ])->columns(2);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->defaultSort('sale_date', 'desc')
+            ->columns([
+                Tables\Columns\TextColumn::make('user.name')->label('Handled By')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('total_amount')->money('idr', true),
+                Tables\Columns\TextColumn::make('sale_date')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\Filter::make('sale_date')
+                    ->form([
+                        Forms\Components\DatePicker::make('from'),
+                        Forms\Components\DatePicker::make('until'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['from'] ?? null, fn ($q, $date) => $q->whereDate('sale_date', '>=', $date))
+                            ->when($data['until'] ?? null, fn ($q, $date) => $q->whereDate('sale_date', '<=', $date));
+                    }),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListSales::route('/'),
+            'create' => Pages\CreateSale::route('/create'),
+            'view' => Pages\ViewSale::route('/{record}'),
+            'edit' => Pages\EditSale::route('/{record}/edit'),
+        ];
+    }
+}

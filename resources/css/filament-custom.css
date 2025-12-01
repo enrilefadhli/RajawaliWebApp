@@ -1,0 +1,4 @@
+/* Align the PR details repeater header (Add product) to the left */
+.pr-details-left .fi-fo-repeater-header {
+    justify-content: flex-start;
+}
