@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\ValidationException;
+use App\Models\BatchOfStock;
 
 class SaleDetail extends Model
 {
@@ -16,6 +18,19 @@ class SaleDetail extends Model
         'quantity',
         'price',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (SaleDetail $detail) {
+            if (! $detail->product_id) {
+                throw ValidationException::withMessages([
+                    'product_id' => 'Product is required for stock deduction.',
+                ]);
+            }
+
+            BatchOfStock::deductFefo($detail->product_id, (int) $detail->quantity);
+        });
+    }
 
     public function sale(): BelongsTo
     {

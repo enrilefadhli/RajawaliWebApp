@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\BatchOfStock;
+use App\Models\StockOpnameItem;
+use App\Models\StockAdjustmentItem;
 
 class Product extends Model
 {
@@ -30,16 +32,6 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function stock(): HasOne
-    {
-        return $this->hasOne(Stock::class);
-    }
-
-    public function stockAdjustments(): HasMany
-    {
-        return $this->hasMany(StockAdjustment::class);
-    }
-
     public function purchaseRequestDetails(): HasMany
     {
         return $this->hasMany(PurchaseRequestDetail::class);
@@ -60,8 +52,18 @@ class Product extends Model
         return $this->hasMany(SaleDetail::class);
     }
 
-    public function opnameRows(): HasMany
+    public function batchOfStocks(): HasMany
     {
-        return $this->hasMany(StockOpname::class);
+        return $this->hasMany(BatchOfStock::class, 'product_id');
+    }
+
+    public function stockOpnameItems(): HasMany
+    {
+        return $this->hasMany(StockOpnameItem::class);
+    }
+
+    public function stockAdjustmentItems(): HasMany
+    {
+        return $this->hasMany(StockAdjustmentItem::class);
     }
 }

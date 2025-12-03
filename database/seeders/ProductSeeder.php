@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Services\InventoryService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -62,8 +61,6 @@ class ProductSeeder extends Seeder
             }
         }
 
-        $inventory = app(InventoryService::class);
-
         foreach ($products as $item) {
             $purchasePrice = (int) $item['price'];
             $sellingPrice = $purchasePrice > 0 ? (int) ceil($purchasePrice * 1.15) : 0;
@@ -94,8 +91,6 @@ class ProductSeeder extends Seeder
             ]);
 
             $product->save();
-
-            $inventory->setInitialStock($product, 0, Auth::user());
         }
     }
 

@@ -27,6 +27,7 @@ class SaleDetailResource extends Resource
                 ->label('Sale'),
             Forms\Components\Select::make('product_id')
                 ->relationship('product', 'product_name')
+                ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
                 ->required(),
             Forms\Components\TextInput::make('quantity')->numeric()->required(),
             Forms\Components\TextInput::make('price')->numeric()->required(),

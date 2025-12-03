@@ -5,28 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StockOpname extends Model
 {
     use HasFactory;
 
-    protected $table = 'stock_opname';
-
     protected $fillable = [
-        'session_id',
-        'product_id',
-        'stock_system',
-        'stock_physical',
-        'difference',
+        'opname_date',
+        'created_by',
+        'notes',
     ];
 
-    public function session(): BelongsTo
+    protected $casts = [
+        'opname_date' => 'date',
+    ];
+
+    public function creator(): BelongsTo
     {
-        return $this->belongsTo(StockOpnameSession::class, 'session_id');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function product(): BelongsTo
+    public function items(): HasMany
     {
-        return $this->belongsTo(Product::class);
+        return $this->hasMany(StockOpnameItem::class);
     }
 }

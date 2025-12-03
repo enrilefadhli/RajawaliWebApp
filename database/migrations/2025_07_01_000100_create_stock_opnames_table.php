@@ -6,25 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('stock_opname_sessions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+        Schema::create('stock_opnames', function (Blueprint $table) {
+            $table->bigIncrements('id');
             $table->date('opname_date');
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('stock_opname_sessions');
+        Schema::dropIfExists('stock_opnames');
     }
 };

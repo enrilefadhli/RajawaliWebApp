@@ -3,8 +3,8 @@
 namespace App\Filament\Admin\Resources\StockAdjustmentResource\Pages;
 
 use App\Filament\Admin\Resources\StockAdjustmentResource;
-use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreateStockAdjustment extends CreateRecord
 {

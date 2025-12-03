@@ -25,6 +25,7 @@ class PurchaseOrderDetailResource extends Resource
                 ->label('Purchase Order'),
             Forms\Components\Select::make('product_id')
                 ->relationship('product', 'product_name')
+                ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
                 ->required(),
             Forms\Components\TextInput::make('quantity')->numeric()->required(),
         ])->columns(2);

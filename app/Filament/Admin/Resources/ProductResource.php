@@ -4,7 +4,6 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\ProductResource\Pages;
 use App\Models\Product;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -37,13 +36,6 @@ class ProductResource extends Resource
             Forms\Components\TextInput::make('discount_percent')->numeric()->nullable(),
             Forms\Components\TextInput::make('discount_amount')->numeric()->nullable(),
             Forms\Components\TextInput::make('minimum_stock')->numeric()->required(),
-            TextInput::make('current_stock')
-                ->label('Current Stock')
-                ->numeric()
-                ->minValue(0)
-                ->default(fn (?Product $record) => $record?->stock?->quantity ?? 0)
-                ->dehydrated(false)
-                ->helperText('Manual stock updates here will be logged as Stock Adjustments on save.'),
         ])->columns(2);
     }
 
@@ -60,8 +52,9 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('selling_price')->money('idr', true)->sortable(),
                 Tables\Columns\TextColumn::make('purchase_price')->money('idr', true)->sortable(),
                 Tables\Columns\TextColumn::make('minimum_stock'),
-                Tables\Columns\TextColumn::make('stock.quantity')
-                    ->label('Current Stock')
+                Tables\Columns\TextColumn::make('batchOfStocks_sum_quantity')
+                    ->label('Total Stock')
+                    ->sum('batchOfStocks', 'quantity')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])

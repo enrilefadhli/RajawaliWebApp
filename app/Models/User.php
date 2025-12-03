@@ -82,9 +82,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(StockAdjustment::class, 'created_by');
     }
-
-    public function opnameSessions()
-    {
-        return $this->hasMany(StockOpnameSession::class, 'created_by');
-    }
 }

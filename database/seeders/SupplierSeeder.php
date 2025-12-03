@@ -11,24 +11,16 @@ class SupplierSeeder extends Seeder
     {
         $suppliers = [
             [
+                'supplier_code' => 'UNVR',
                 'supplier_name' => 'UNILEVER INDONESIA',
                 'supplier_phone' => '021-804-70000',
                 'supplier_address' => 'Grha Unilever, BSD Green Office Park, Tangerang',
             ],
             [
-                'supplier_name' => 'CV Tirta Makmur',
-                'supplier_phone' => '021-777-2233',
-                'supplier_address' => 'Jl. Industri No.18, Bekasi',
-            ],
-            [
-                'supplier_name' => 'PT Cahaya Elektronik',
-                'supplier_phone' => '021-9900-1122',
-                'supplier_address' => 'Jl. Gatot Subroto No.55, Jakarta Selatan',
-            ],
-            [
-                'supplier_name' => 'UD Sejahtera Grosir',
-                'supplier_phone' => '021-8877-3344',
-                'supplier_address' => 'Jl. Pasar Rebo No.12, Depok',
+                'supplier_code' => 'UNSP',
+                'supplier_name' => 'UNSPECIFIED SUPPLIER',
+                'supplier_phone' => null,
+                'supplier_address' => null,
             ],
         ];
 

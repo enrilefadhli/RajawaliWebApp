@@ -23,8 +23,9 @@ class SupplierResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
+            Forms\Components\TextInput::make('supplier_code')->maxLength(255),
             Forms\Components\TextInput::make('supplier_name')->required()->maxLength(255),
-            Forms\Components\TextInput::make('supplier_phone')->required()->maxLength(255),
+            Forms\Components\TextInput::make('supplier_phone')->maxLength(255),
             Forms\Components\TextInput::make('supplier_address')->maxLength(255),
         ])->columns(2);
     }
@@ -34,6 +35,7 @@ class SupplierResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
+                Tables\Columns\TextColumn::make('supplier_code')->label('Code')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('supplier_name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('supplier_phone'),
                 Tables\Columns\TextColumn::make('supplier_address'),
