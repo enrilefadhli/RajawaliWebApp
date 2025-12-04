@@ -35,6 +35,7 @@ class BatchOfStockResource extends Resource
                 ->options(function (callable $get) {
                     return Product::query()
                         ->when($get('category_filter'), fn ($q, $catId) => $q->where('category_id', $catId))
+                        ->where('status', 'ACTIVE')
                         ->orderBy('product_name')
                         ->get()
                         ->mapWithKeys(fn ($product) => [
@@ -54,6 +55,7 @@ class BatchOfStockResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('product.product_name')->label('Product')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('product.product_code')->label('Product Code')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('batch_no')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('expiry_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('quantity')->sortable(),

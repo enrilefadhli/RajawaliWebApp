@@ -5,17 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class PurchaseOrder extends Model
+class PurchaseRequestApproval extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'purchase_request_id',
+        'approved_by',
         'status',
-        'attachment_path',
+        'note',
+        'approved_at',
+    ];
+
+    protected $casts = [
+        'approved_at' => 'datetime',
     ];
 
     public function purchaseRequest(): BelongsTo
@@ -23,13 +27,8 @@ class PurchaseOrder extends Model
         return $this->belongsTo(PurchaseRequest::class);
     }
 
-    public function details(): HasMany
+    public function approver(): BelongsTo
     {
-        return $this->hasMany(PurchaseOrderDetail::class);
-    }
-
-    public function purchase(): HasOne
-    {
-        return $this->hasOne(Purchase::class);
+        return $this->belongsTo(User::class, 'approved_by');
     }
 }

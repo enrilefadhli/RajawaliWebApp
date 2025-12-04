@@ -29,19 +29,32 @@ class BatchOfStock extends Model
     {
         static::creating(function (BatchOfStock $batch) {
             if (empty($batch->batch_no)) {
-                $batch->batch_no = self::generateBatchCode($batch->expiry_date);
+                DB::transaction(function () use ($batch) {
+                    $batch->batch_no = self::generateUniqueBatchCode($batch->expiry_date);
+                });
             }
         });
     }
 
-    protected static function generateBatchCode($expiryDate): string
+    protected static function generateUniqueBatchCode($expiryDate): string
     {
-        $prefix = 'BATCH';
         $today = now()->format('Ymd');
-        $seq = str_pad((string) random_int(1, 99), 2, '0', STR_PAD_LEFT);
-        $exp = $expiryDate ? 'EXP' . date('Ymd', strtotime((string) $expiryDate)) : 'EXP00000000';
+        $exp = $expiryDate ? date('Ymd', strtotime((string) $expiryDate)) : '00000000';
+        $pattern = "B-{$today}-{$exp}-%";
 
-        return Str::upper(sprintf('%s-%s-%s-%s', $prefix, $today, $seq, $exp));
+        $latest = self::lockForUpdate()
+            ->where('batch_no', 'like', $pattern)
+            ->orderByDesc('batch_no')
+            ->value('batch_no');
+
+        $nextSeq = 1;
+        if ($latest && preg_match("/^B-{$today}-{$exp}-(\\d+)$/", $latest, $matches)) {
+            $nextSeq = ((int) $matches[1]) + 1;
+        }
+
+        $seq = str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
+
+        return Str::upper("B-{$today}-{$exp}-{$seq}");
     }
 
     public function product(): BelongsTo

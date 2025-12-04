@@ -19,7 +19,6 @@ return new class extends Migration
             $table->decimal('total_amount',15,2);
             $table->string('request_note')->nullable();
             $table->string('status')->default('PENDING');
-            $table->string('handled_note')->nullable();
             $table->dateTime('requested_at');
             $table->dateTime('handled_at')->nullable();
             $table->timestamps();

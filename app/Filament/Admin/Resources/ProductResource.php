@@ -36,6 +36,15 @@ class ProductResource extends Resource
             Forms\Components\TextInput::make('discount_percent')->numeric()->nullable(),
             Forms\Components\TextInput::make('discount_amount')->numeric()->nullable(),
             Forms\Components\TextInput::make('minimum_stock')->numeric()->required(),
+            Forms\Components\Select::make('status')
+                ->label('Status')
+                ->options([
+                    'ACTIVE' => 'Active',
+                    'STORED' => 'Stored',
+                    'DISABLED' => 'Disabled',
+                ])
+                ->default('DISABLED')
+                ->required(),
         ])->columns(2);
     }
 
@@ -52,9 +61,17 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('selling_price')->money('idr', true)->sortable(),
                 Tables\Columns\TextColumn::make('purchase_price')->money('idr', true)->sortable(),
                 Tables\Columns\TextColumn::make('minimum_stock'),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status')
+                    ->colors([
+                        'success' => 'ACTIVE',
+                        'warning' => 'STORED',
+                        'danger' => 'DISABLED',
+                    ])
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('batchOfStocks_sum_quantity')
                     ->label('Total Stock')
-                    ->sum('batchOfStocks', 'quantity')
+                    ->getStateUsing(fn (Product $record) => $record->batchOfStocks()->sum('quantity'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
@@ -62,6 +79,14 @@ class ProductResource extends Resource
                 Tables\Filters\SelectFilter::make('category_id')
                     ->label('Category')
                     ->relationship('category', 'category_name'),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'ACTIVE' => 'Active',
+                        'STORED' => 'Stored',
+                        'DISABLED' => 'Disabled',
+                    ])
+                    ->default('ACTIVE'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

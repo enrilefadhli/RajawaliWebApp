@@ -7,9 +7,11 @@ use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers\DetailsR
 use App\Models\PurchaseOrder;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\FileUpload;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class PurchaseOrderResource extends Resource
 {
@@ -36,6 +38,16 @@ class PurchaseOrderResource extends Resource
                     'COMPLETED' => 'COMPLETED',
                 ])
                 ->required(),
+            FileUpload::make('attachment_path')
+                ->label('Attachment (PDF)')
+                ->acceptedFileTypes(['application/pdf'])
+                ->directory('purchase-orders')
+                ->disk('public')
+                ->visibility('public')
+                ->downloadable()
+                ->openable()
+                ->preserveFilenames()
+                ->nullable(),
         ])->columns(1);
     }
 
@@ -46,6 +58,9 @@ class PurchaseOrderResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('purchaseRequest.id')->label('PR')->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('attachment_path')
+                    ->label('Attachment')
+                    ->url(fn ($record) => $record->attachment_path ? Storage::disk('public')->url($record->attachment_path) : null, true),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->filters([
@@ -81,5 +96,20 @@ class PurchaseOrderResource extends Resource
         return [
             DetailsRelationManager::class,
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->canApprovePurchaseOrders() ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->canApprovePurchaseOrders() ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->canApprovePurchaseOrders() ?? false;
     }
 }

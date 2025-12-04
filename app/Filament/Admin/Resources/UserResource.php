@@ -45,12 +45,10 @@ class UserResource extends Resource
                 ->maxLength(255),
             Forms\Components\TextInput::make('address')
                 ->maxLength(255),
-            Forms\Components\Select::make('role')
-                ->required()
-                ->options([
-                    'ADMIN' => 'ADMIN',
-                    'STAFF' => 'STAFF',
-                ]),
+            Forms\Components\MultiSelect::make('roles')
+                ->relationship('roles', 'name')
+                ->preload()
+                ->label('Roles'),
         ])->columns(2);
     }
 
@@ -62,16 +60,14 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('name')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('phone'),
-                Tables\Columns\TextColumn::make('role')->badge(),
+                Tables\Columns\TagsColumn::make('roles.name')->label('Roles'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('role')
-                    ->options([
-                        'ADMIN' => 'ADMIN',
-                        'STAFF' => 'STAFF',
-                    ]),
+                Tables\Filters\SelectFilter::make('roles')
+                    ->label('Role')
+                    ->relationship('roles', 'name'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
@@ -91,5 +87,15 @@ class UserResource extends Resource
             'view' => Pages\ViewUser::route('/{record}'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canManageUsers() ?? false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->canManageUsers() ?? false;
     }
 }

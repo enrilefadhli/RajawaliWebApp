@@ -24,7 +24,7 @@ class PurchaseOrderDetailResource extends Resource
                 ->required()
                 ->label('Purchase Order'),
             Forms\Components\Select::make('product_id')
-                ->relationship('product', 'product_name')
+                ->relationship('product', 'product_name', fn ($query) => $query->where('status', 'ACTIVE'))
                 ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
                 ->required(),
             Forms\Components\TextInput::make('quantity')->numeric()->required(),

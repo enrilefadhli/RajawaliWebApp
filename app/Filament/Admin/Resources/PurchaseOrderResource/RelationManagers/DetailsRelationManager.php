@@ -16,7 +16,7 @@ class DetailsRelationManager extends RelationManager
     {
         return $form->schema([
             Forms\Components\Select::make('product_id')
-                ->relationship('product', 'product_name')
+                ->relationship('product', 'product_name', fn ($query) => $query->whereIn('status', ['ACTIVE', 'STORED']))
                 ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
                 ->required()
                 ->searchable()
@@ -37,15 +37,8 @@ class DetailsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('quantity'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->since(),
             ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->headerActions([])
+            ->actions([])
+            ->bulkActions([]);
     }
 }

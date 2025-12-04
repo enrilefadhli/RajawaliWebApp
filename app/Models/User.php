@@ -9,8 +9,11 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -68,6 +71,11 @@ class User extends Authenticatable
         return $this->hasMany(PurchaseRequest::class, 'approved_by_id');
     }
 
+    public function purchaseRequestApprovals()
+    {
+        return $this->hasMany(PurchaseRequestApproval::class, 'approved_by');
+    }
+
     public function purchases()
     {
         return $this->hasMany(Purchase::class);
@@ -81,5 +89,30 @@ class User extends Authenticatable
     public function stockAdjustments()
     {
         return $this->hasMany(StockAdjustment::class, 'created_by');
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class)->withTimestamps();
+    }
+
+    public function hasRole(string $name): bool
+    {
+        return $this->roles()->where('name', $name)->exists();
+    }
+
+    public function canManageUsers(): bool
+    {
+        return $this->hasRole('ADMIN');
+    }
+
+    public function canApprovePurchaseOrders(): bool
+    {
+        return $this->hasRole('ADMIN');
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->hasRole('ADMIN') || $this->hasRole('STAFF');
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\PurchaseRequestApproval;
 
 class PurchaseRequest extends Model
 {
@@ -19,7 +20,6 @@ class PurchaseRequest extends Model
         'total_amount',
         'request_note',
         'status',
-        'handled_note',
         'requested_at',
         'handled_at',
     ];
@@ -47,6 +47,11 @@ class PurchaseRequest extends Model
     public function details(): HasMany
     {
         return $this->hasMany(PurchaseRequestDetail::class);
+    }
+
+    public function approvals(): HasMany
+    {
+        return $this->hasMany(PurchaseRequestApproval::class);
     }
 
     public function purchaseOrder(): HasOne

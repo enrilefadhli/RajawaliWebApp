@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PurchaseRequestResource\Pages;
 use App\Filament\Admin\Resources\PurchaseRequestResource\RelationManagers\DetailsRelationManager;
+use App\Filament\Admin\Resources\PurchaseRequestResource\RelationManagers\ApprovalsRelationManager;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\PurchaseRequest;
@@ -134,6 +135,7 @@ class PurchaseRequestResource extends Resource
     {
         return [
             DetailsRelationManager::class,
+            ApprovalsRelationManager::class,
         ];
     }
 }

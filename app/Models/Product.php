@@ -25,7 +25,23 @@ class Product extends Model
         'discount_percent',
         'discount_amount',
         'minimum_stock',
+        'status',
     ];
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'ACTIVE');
+    }
+
+    public function scopeStored($query)
+    {
+        return $query->where('status', 'STORED');
+    }
+
+    public function scopeDisabled($query)
+    {
+        return $query->where('status', 'DISABLED');
+    }
 
     public function category(): BelongsTo
     {
