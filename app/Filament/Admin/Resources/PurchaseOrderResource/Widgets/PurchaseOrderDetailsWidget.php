@@ -26,6 +26,13 @@ class PurchaseOrderDetailsWidget extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('product.product_name')->label('Product')->searchable(),
                 Tables\Columns\TextColumn::make('quantity'),
+                Tables\Columns\TextColumn::make('expiry_date')->date()->label('Expiry Date'),
+                Tables\Columns\TextColumn::make('expected_unit_price')->money('idr', true)->label('Expected Unit Price'),
+                Tables\Columns\TextColumn::make('unit_price')->money('idr', true)->label('Unit Price'),
+                Tables\Columns\TextColumn::make('line_total')
+                    ->label('Line Total')
+                    ->money('idr', true)
+                    ->state(fn ($record) => (float) ($record->unit_price ?? 0) * (int) ($record->quantity ?? 0)),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->since(),
             ])
             ->actions([])

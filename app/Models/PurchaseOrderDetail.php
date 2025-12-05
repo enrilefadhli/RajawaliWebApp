@@ -14,6 +14,15 @@ class PurchaseOrderDetail extends Model
         'purchase_order_id',
         'product_id',
         'quantity',
+        'expiry_date',
+        'expected_unit_price',
+        'unit_price',
+    ];
+
+    protected $casts = [
+        'expiry_date' => 'date',
+        'expected_unit_price' => 'decimal:2',
+        'unit_price' => 'decimal:2',
     ];
 
     public function purchaseOrder(): BelongsTo

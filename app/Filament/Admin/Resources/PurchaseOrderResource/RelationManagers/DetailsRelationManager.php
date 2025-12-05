@@ -7,6 +7,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Models\Product;
 
 class DetailsRelationManager extends RelationManager
 {
@@ -18,6 +19,14 @@ class DetailsRelationManager extends RelationManager
             Forms\Components\Select::make('product_id')
                 ->relationship('product', 'product_name', fn ($query) => $query->whereIn('status', ['ACTIVE', 'STORED']))
                 ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
+                ->reactive()
+                ->afterStateUpdated(function ($state, callable $set) {
+                    $product = Product::find($state);
+                    $price = (int) ($product?->purchase_price ?? 0);
+                    $set('unit_price', $price);
+                    $set('expected_unit_price', $price);
+                })
+                ->disabled()
                 ->required()
                 ->searchable()
                 ->preload()
@@ -25,6 +34,27 @@ class DetailsRelationManager extends RelationManager
             Forms\Components\TextInput::make('quantity')
                 ->numeric()
                 ->minValue(1)
+                ->required()
+                ->disabled(),
+            Forms\Components\DatePicker::make('expiry_date')
+                ->label('Expiry Date')
+                ->required()
+                ->native(false),
+            Forms\Components\TextInput::make('expected_unit_price')
+                ->label('Expected Unit Price')
+                ->disabled()
+                ->numeric()
+                ->minValue(0)
+                ->step(0.01),
+            Forms\Components\TextInput::make('unit_price')
+                ->label('Unit Price')
+                ->numeric()
+                ->minValue(0)
+                ->step(0.01)
+                ->reactive()
+                ->afterStateUpdated(function ($state, callable $set) {
+                    $set('unit_price', $state);
+                })
                 ->required(),
         ]);
     }
@@ -35,10 +65,33 @@ class DetailsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('product.product_name')->label('Product')->searchable(),
                 Tables\Columns\TextColumn::make('quantity'),
+                Tables\Columns\TextColumn::make('expiry_date')->date()->label('Expiry Date'),
+                Tables\Columns\TextColumn::make('expected_unit_price')->money('idr', true)->label('Expected Unit Price'),
+                Tables\Columns\TextColumn::make('unit_price')->money('idr', true)->label('Unit Price'),
+                Tables\Columns\TextColumn::make('line_total')
+                    ->label('Line Total')
+                    ->money('idr', true)
+                    ->state(fn ($record) => (float) ($record->unit_price ?? 0) * (int) ($record->quantity ?? 0)),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->since(),
             ])
             ->headerActions([])
-            ->actions([])
+            ->actions([
+                Tables\Actions\EditAction::make()
+                    ->modalHeading('Edit Unit Price')
+                    ->modalButton('Save')
+                    ->form([
+                        Forms\Components\DatePicker::make('expiry_date')
+                            ->label('Expiry Date')
+                            ->required()
+                            ->native(false),
+                        Forms\Components\TextInput::make('unit_price')
+                            ->label('Unit Price')
+                            ->numeric()
+                            ->minValue(0)
+                            ->step(0.01)
+                            ->required(),
+                    ]),
+            ])
             ->bulkActions([]);
     }
 }

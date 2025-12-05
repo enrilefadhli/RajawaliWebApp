@@ -14,6 +14,11 @@ class PurchaseRequestDetail extends Model
         'purchase_request_id',
         'product_id',
         'quantity',
+        'expected_unit_price',
+    ];
+
+    protected $casts = [
+        'expected_unit_price' => 'decimal:2',
     ];
 
     public function purchaseRequest(): BelongsTo

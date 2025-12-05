@@ -65,6 +65,11 @@ class PurchaseRequestResource extends Resource
                             }
                             return $query->pluck('product_name', 'id');
                         })
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            $price = (int) (Product::find($state)?->purchase_price ?? 0);
+                            $set('expected_unit_price', $price);
+                        })
                         ->required()
                         ->searchable()
                         ->preload()
@@ -74,8 +79,18 @@ class PurchaseRequestResource extends Resource
                         ->minValue(1)
                         ->required()
                         ->label('Quantity'),
+                    Forms\Components\TextInput::make('expected_unit_price')
+                        ->label('Expected Unit Price')
+                        ->numeric()
+                        ->minValue(0)
+                        ->step(0.01)
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                            $set('expected_unit_price', $state);
+                        })
+                        ->dehydrated(true),
                 ])
-                ->columns(3)
+                ->columns(4)
                 ->minItems(1)
                 ->default(fn () => [['quantity' => 1]]),
         ])->columns(2);
@@ -93,7 +108,7 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('requested_at')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('handled_at')->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('total_amount')->money('idr', true),
+                Tables\Columns\TextColumn::make('total_expected_amount')->label('Total Expected')->money('idr', true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -118,7 +133,6 @@ class PurchaseRequestResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -131,7 +145,6 @@ class PurchaseRequestResource extends Resource
             'index' => Pages\ListPurchaseRequests::route('/'),
             'create' => Pages\CreatePurchaseRequest::route('/create'),
             'view' => Pages\ViewPurchaseRequest::route('/{record}'),
-            'edit' => Pages\EditPurchaseRequest::route('/{record}/edit'),
         ];
     }
 

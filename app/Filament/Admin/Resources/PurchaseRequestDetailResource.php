@@ -30,6 +30,12 @@ class PurchaseRequestDetailResource extends Resource
             Forms\Components\TextInput::make('quantity')
                 ->numeric()
                 ->required(),
+            Forms\Components\TextInput::make('expected_unit_price')
+                ->label('Expected Unit Price')
+                ->numeric()
+                ->minValue(0)
+                ->step(0.01)
+                ->required(),
         ])->columns(2);
     }
 
@@ -40,6 +46,7 @@ class PurchaseRequestDetailResource extends Resource
                 Tables\Columns\TextColumn::make('purchaseRequest.id')->label('PR')->sortable(),
                 Tables\Columns\TextColumn::make('product.product_name')->label('Product')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('quantity'),
+                Tables\Columns\TextColumn::make('expected_unit_price')->money('idr', true)->label('Expected Unit Price'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->actions([

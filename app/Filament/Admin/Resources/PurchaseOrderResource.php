@@ -62,6 +62,7 @@ class PurchaseOrderResource extends Resource
                 Tables\Columns\TextColumn::make('code')->label('PO Code')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('purchaseRequest.code')->label('PR Code')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('total_amount')->money('idr', true),
                 Tables\Columns\TextColumn::make('attachment_path')
                     ->label('Attachment')
                     ->url(fn ($record) => $record->attachment_path ? Storage::disk('public')->url($record->attachment_path) : null, true),
@@ -76,7 +77,8 @@ class PurchaseOrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn ($record) => $record?->status !== 'COMPLETED'),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -107,6 +109,9 @@ class PurchaseOrderResource extends Resource
 
     public static function canEdit($record): bool
     {
+        if ($record?->status === 'COMPLETED') {
+            return false;
+        }
         return auth()->user()?->canApprovePurchaseOrders() ?? false;
     }
 

@@ -19,7 +19,7 @@ class PurchaseRequest extends Model
         'requested_by_id',
         'approved_by_id',
         'supplier_id',
-        'total_amount',
+        'total_expected_amount',
         'request_note',
         'status',
         'requested_at',
@@ -29,6 +29,7 @@ class PurchaseRequest extends Model
     protected $casts = [
         'requested_at' => 'datetime',
         'handled_at' => 'datetime',
+        'total_expected_amount' => 'decimal:2',
     ];
 
     protected static function booted(): void
@@ -73,5 +74,22 @@ class PurchaseRequest extends Model
     public function purchaseOrder(): HasOne
     {
         return $this->hasOne(PurchaseOrder::class);
+    }
+
+    /**
+     * Fallback to detail sums if the stored total is missing/zero.
+     */
+    public function getTotalExpectedAmountAttribute($value): float
+    {
+        $numeric = $value !== null && $value !== '' ? (float) $value : 0.0;
+        if ($numeric > 0) {
+            return $numeric;
+        }
+
+        $sum = $this->details()
+            ->selectRaw('COALESCE(SUM(quantity * expected_unit_price), 0) as total')
+            ->value('total');
+
+        return (float) $sum;
     }
 }

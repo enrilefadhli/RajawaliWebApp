@@ -19,13 +19,15 @@ class CreatePurchaseRequest extends CreateRecord
 
         $details = $data['details'] ?? [];
         $total = 0;
-        foreach ($details as $detail) {
+        foreach ($details as $index => $detail) {
             $qty = (int) ($detail['quantity'] ?? 0);
-            $price = (int) (Product::find($detail['product_id'] ?? null)?->purchase_price ?? 0);
+            $price = (int) ($detail['expected_unit_price'] ?? Product::find($detail['product_id'] ?? null)?->purchase_price ?? 0);
+            $details[$index]['expected_unit_price'] = $price;
             $total += $qty * $price;
         }
 
-        $data['total_amount'] = $total;
+        $data['details'] = $details;
+        $data['total_expected_amount'] = $total;
 
         return $data;
     }

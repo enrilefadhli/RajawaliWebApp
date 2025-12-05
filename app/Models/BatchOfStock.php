@@ -30,17 +30,26 @@ class BatchOfStock extends Model
         static::creating(function (BatchOfStock $batch) {
             if (empty($batch->batch_no)) {
                 DB::transaction(function () use ($batch) {
-                    $batch->batch_no = self::generateUniqueBatchCode($batch->expiry_date);
+                    $productCode = $batch->product?->product_code ?? \App\Models\Product::find($batch->product_id)?->product_code ?? 'NOPROD';
+                    $expiryDate = $batch->expiry_date;
+                    $batch->batch_no = self::generateUniqueBatchCode($productCode, $expiryDate);
                 });
             }
         });
     }
 
-    protected static function generateUniqueBatchCode($expiryDate): string
+    protected static function generateUniqueBatchCode(?string $productCode, $expiryDate): string
     {
-        $today = now()->format('Ymd');
-        $exp = $expiryDate ? date('Ymd', strtotime((string) $expiryDate)) : '00000000';
-        $pattern = "B-{$today}-{$exp}-%";
+        $productCode = strtoupper(trim((string) $productCode)) ?: 'NOPROD';
+        $productCode = preg_replace('/[^A-Z0-9]/', '', $productCode);
+
+        $expiry = $expiryDate ? date('Ymd', strtotime((string) $expiryDate)) : null;
+        if (! $expiry) {
+            throw new \InvalidArgumentException('Expiry date is required for batch code generation.');
+        }
+
+        $base = "B{$productCode}{$expiry}";
+        $pattern = "{$base}%";
 
         $latest = self::lockForUpdate()
             ->where('batch_no', 'like', $pattern)
@@ -48,13 +57,14 @@ class BatchOfStock extends Model
             ->value('batch_no');
 
         $nextSeq = 1;
-        if ($latest && preg_match("/^B-{$today}-{$exp}-(\\d+)$/", $latest, $matches)) {
+        $regex = '/^' . preg_quote($base, '/') . '(\\d+)$/';
+        if ($latest && preg_match($regex, $latest, $matches)) {
             $nextSeq = ((int) $matches[1]) + 1;
         }
 
         $seq = str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
 
-        return Str::upper("B-{$today}-{$exp}-{$seq}");
+        return Str::upper("{$base}{$seq}");
     }
 
     public function product(): BelongsTo

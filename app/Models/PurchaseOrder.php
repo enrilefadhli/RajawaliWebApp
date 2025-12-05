@@ -18,6 +18,11 @@ class PurchaseOrder extends Model
         'purchase_request_id',
         'status',
         'attachment_path',
+        'total_amount',
+    ];
+
+    protected $casts = [
+        'total_amount' => 'decimal:2',
     ];
 
     protected static function booted(): void

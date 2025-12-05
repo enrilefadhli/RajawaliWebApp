@@ -24,8 +24,9 @@ class Purchase extends Model
     {
         static::creating(function (Purchase $purchase): void {
             if (empty($purchase->code)) {
+                $prefix = $purchase->purchase_order_id ? 'AP-' : 'DP-';
                 $purchase->code = app(\App\Services\CodeGeneratorService::class)->generate(
-                    prefix: 'DP-',
+                    prefix: $prefix,
                     table: $purchase->getTable(),
                     column: 'code',
                     date: $purchase->created_at ?? now()

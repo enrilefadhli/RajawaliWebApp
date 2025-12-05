@@ -100,6 +100,9 @@ class PurchaseRequestApprovalResource extends Resource
                                         'purchase_order_id' => $po->id,
                                         'product_id' => $detail->product_id,
                                         'quantity' => $detail->quantity,
+                                        'expiry_date' => null,
+                                        'expected_unit_price' => $detail->expected_unit_price ?? 0,
+                                        'unit_price' => $detail->expected_unit_price ?? 0,
                                     ]);
                                 }
                             }
