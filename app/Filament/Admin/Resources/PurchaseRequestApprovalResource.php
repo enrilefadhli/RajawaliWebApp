@@ -46,7 +46,7 @@ class PurchaseRequestApprovalResource extends Resource
         return $table
             ->defaultSort('requested_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label('PR')->sortable(),
+                Tables\Columns\TextColumn::make('code')->label('PR Code')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('requester.name')->label('Requested By')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('supplier.supplier_name')->label('Supplier')->sortable()->searchable(),
                 Tables\Columns\BadgeColumn::make('status')->label('Status')
@@ -92,7 +92,7 @@ class PurchaseRequestApprovalResource extends Resource
                             if (! $record->purchaseOrder()->exists()) {
                                 $po = PurchaseOrder::create([
                                     'purchase_request_id' => $record->id,
-                                    'status' => 'UNPROCESSED',
+                                    'status' => 'ONPROGRESS',
                                 ]);
 
                                 foreach ($record->details as $detail) {

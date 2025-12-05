@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\PurchaseRequestApproval;
+use App\Services\CodeGeneratorService;
 
 class PurchaseRequest extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'code',
         'requested_by_id',
         'approved_by_id',
         'supplier_id',
@@ -28,6 +30,20 @@ class PurchaseRequest extends Model
         'requested_at' => 'datetime',
         'handled_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (PurchaseRequest $purchaseRequest): void {
+            if (empty($purchaseRequest->code)) {
+                $purchaseRequest->code = app(CodeGeneratorService::class)->generate(
+                    prefix: 'PR-',
+                    table: $purchaseRequest->getTable(),
+                    column: 'code',
+                    date: $purchaseRequest->requested_at
+                );
+            }
+        });
+    }
 
     public function requester(): BelongsTo
     {

@@ -12,12 +12,27 @@ class Purchase extends Model
     use HasFactory;
 
     protected $fillable = [
+        'code',
         'user_id',
         'supplier_id',
         'purchase_order_id',
         'total_amount',
         'notes',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Purchase $purchase): void {
+            if (empty($purchase->code)) {
+                $purchase->code = app(\App\Services\CodeGeneratorService::class)->generate(
+                    prefix: 'DP-',
+                    table: $purchase->getTable(),
+                    column: 'code',
+                    date: $purchase->created_at ?? now()
+                );
+            }
+        });
+    }
 
     public function user(): BelongsTo
     {

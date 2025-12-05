@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers\DetailsRelationManager;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseRequest;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\FileUpload;
@@ -26,20 +27,22 @@ class PurchaseOrderResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
+            Forms\Components\Placeholder::make('code')
+                ->label('PO Code')
+                ->content(fn (?PurchaseOrder $record) => $record?->code ?? 'Will be generated on save'),
             Forms\Components\Select::make('purchase_request_id')
                 ->relationship('purchaseRequest', 'id')
-                ->required()
-                ->label('Purchase Request'),
-            Forms\Components\Select::make('status')
-                ->options([
-                    'UNPROCESSED' => 'UNPROCESSED',
-                    'WAITING' => 'WAITING',
-                    'RECEIVED' => 'RECEIVED',
-                    'COMPLETED' => 'COMPLETED',
-                ])
-                ->required(),
+                ->required(fn (string $operation): bool => $operation === 'create')
+                ->label('Purchase Request')
+                ->searchable(['code'])
+                ->getOptionLabelFromRecordUsing(fn (PurchaseRequest $record) => $record->code ?? (string) $record->id)
+                ->disabledOn('edit')
+                ->hiddenOn('edit')
+                ->dehydrated(fn (string $operation): bool => $operation === 'create'),
+            Forms\Components\Hidden::make('status')
+                ->default('ONPROGRESS'),
             FileUpload::make('attachment_path')
-                ->label('Attachment (PDF)')
+                ->label('Invoice / Receipt (PDF)')
                 ->acceptedFileTypes(['application/pdf'])
                 ->directory('purchase-orders')
                 ->disk('public')
@@ -47,7 +50,7 @@ class PurchaseOrderResource extends Resource
                 ->downloadable()
                 ->openable()
                 ->preserveFilenames()
-                ->nullable(),
+                ->required(fn (string $operation): bool => $operation === 'edit'),
         ])->columns(1);
     }
 
@@ -56,7 +59,8 @@ class PurchaseOrderResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('purchaseRequest.id')->label('PR')->sortable(),
+                Tables\Columns\TextColumn::make('code')->label('PO Code')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('purchaseRequest.code')->label('PR Code')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('attachment_path')
                     ->label('Attachment')
@@ -66,9 +70,7 @@ class PurchaseOrderResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options([
-                        'UNPROCESSED' => 'UNPROCESSED',
-                        'WAITING' => 'WAITING',
-                        'RECEIVED' => 'RECEIVED',
+                        'ONPROGRESS' => 'ONPROGRESS',
                         'COMPLETED' => 'COMPLETED',
                     ]),
             ])

@@ -29,6 +29,9 @@ class PurchaseRequestResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
+            Forms\Components\Placeholder::make('code')
+                ->label('PR Code')
+                ->content(fn (?PurchaseRequest $record) => $record?->code ?? 'Will be generated on save'),
             Forms\Components\Placeholder::make('requested_by')
                 ->label('Requested By')
                 ->content(fn () => Auth::user()?->name ?? '-'),
@@ -83,6 +86,7 @@ class PurchaseRequestResource extends Resource
         return $table
             ->defaultSort('requested_at', 'desc')
             ->columns([
+                Tables\Columns\TextColumn::make('code')->label('PR Code')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('requester.name')->label('Requested By')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('approver.name')->label('Approved By')->sortable(),
                 Tables\Columns\TextColumn::make('supplier.supplier_name')->label('Supplier')->sortable()->searchable(),
