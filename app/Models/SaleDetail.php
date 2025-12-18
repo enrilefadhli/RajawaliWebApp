@@ -30,6 +30,18 @@ class SaleDetail extends Model
 
             BatchOfStock::deductFefo($detail->product_id, (int) $detail->quantity);
         });
+
+        static::created(function (SaleDetail $detail) {
+            $detail->sale?->recalculateTotal();
+        });
+
+        static::updated(function (SaleDetail $detail) {
+            $detail->sale?->recalculateTotal();
+        });
+
+        static::deleted(function (SaleDetail $detail) {
+            $detail->sale?->recalculateTotal();
+        });
     }
 
     public function sale(): BelongsTo

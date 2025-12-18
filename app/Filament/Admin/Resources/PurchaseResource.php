@@ -50,7 +50,7 @@ class PurchaseResource extends Resource
                 ->columnSpanFull()
                 ->minItems(1)
                 ->default(fn () => [['quantity' => 1]])
-                ->addActionLabel('Add Item')
+                ->addActionLabel('Add items')
                 ->schema([
                     Forms\Components\Select::make('product_id')
                         ->label('Product')

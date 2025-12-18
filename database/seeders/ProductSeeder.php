@@ -146,7 +146,7 @@ class ProductSeeder extends Seeder
         return $data;
     }
 
-    protected function guessCategory(string $name): string
+    public function guessCategory(string $name): string
     {
         $lower = Str::lower($name);
 

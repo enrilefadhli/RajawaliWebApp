@@ -66,6 +66,12 @@ class PurchaseService
                     'price' => $price,
                 ]);
 
+                if (! $detail->expiry_date) {
+                    throw ValidationException::withMessages([
+                        'details' => ['Expiry date is required for all items before completing the purchase.'],
+                    ]);
+                }
+
                 // Increase stock by creating a batch entry.
                 BatchOfStock::create([
                     'product_id' => $purchaseDetail->product_id,
@@ -116,6 +122,12 @@ class PurchaseService
                 $quantity = (int) $item['quantity'];
                 $price = (int) ($item['price'] ?? Product::find($productId)?->purchase_price ?? 0);
                 $expiryDate = $item['expiry_date'] ?? null;
+
+                if (! $expiryDate) {
+                    throw ValidationException::withMessages([
+                        'items' => ['Expiry date is required for all items.'],
+                    ]);
+                }
 
                 $purchaseDetail = PurchaseDetail::create([
                     'purchase_id' => $purchase->id,

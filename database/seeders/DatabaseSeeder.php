@@ -42,10 +42,23 @@ class DatabaseSeeder extends Seeder
         ]);
         $staff->roles()->sync([$staffRole->id]);
 
+        $enrile = User::updateOrCreate(
+            ['username' => 'enrilefadhli'],
+            [
+                'email' => 'enrilefadhli@gmail.com',
+                'password' => Hash::make('password'),
+                'name' => 'Enrile Fadhli Fahrezi',
+                'phone' => '081388932334',
+                'address' => '-',
+                'role' => 'ADMIN',
+            ]
+        );
+        $enrile->roles()->syncWithoutDetaching([$adminRole->id]);
+
         $this->call([
             CategorySeeder::class,
             SupplierSeeder::class,
-            ProductSeeder::class,
+            RajawaliFlowSeeder::class,
         ]);
     }
 }

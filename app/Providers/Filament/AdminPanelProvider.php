@@ -19,6 +19,9 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Admin\Pages\Auth\Login;
+use App\Filament\Admin\Pages\ManageSystemSettings;
+use App\Filament\Admin\Widgets\InventoryKpiOverview;
+use App\Filament\Admin\Widgets\AdminAccountWidget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -45,18 +48,17 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Purchasing'),
                 NavigationGroup::make()
                     ->label('Sales'),
-                NavigationGroup::make()
-                    ->label('Stock Opname & Adjustments'),
             ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
                 Pages\Dashboard::class,
+                ManageSystemSettings::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                InventoryKpiOverview::class,
+                AdminAccountWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

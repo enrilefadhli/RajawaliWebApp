@@ -18,7 +18,7 @@ class StockAdjustmentResource extends Resource
 {
     protected static ?string $model = StockAdjustment::class;
 
-    protected static ?string $navigationGroup = 'Stock';
+    protected static ?string $navigationGroup = 'Stock System';
     protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
     protected static ?int $navigationSort = 30;
 

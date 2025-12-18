@@ -18,7 +18,7 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -45,9 +45,9 @@ class UserResource extends Resource
                 ->maxLength(255),
             Forms\Components\TextInput::make('address')
                 ->maxLength(255),
-            Forms\Components\MultiSelect::make('roles')
+            Forms\Components\CheckboxList::make('roles')
                 ->relationship('roles', 'name')
-                ->preload()
+                ->columns(2)
                 ->label('Roles'),
         ])->columns(2);
     }

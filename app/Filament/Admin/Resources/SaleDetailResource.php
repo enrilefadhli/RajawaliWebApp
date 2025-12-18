@@ -44,6 +44,22 @@ class SaleDetailResource extends Resource
                 Tables\Columns\TextColumn::make('price')->money('idr', true),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
+            ->filters([
+                Tables\Filters\Filter::make('sale_date')
+                    ->label('Sale Date')
+                    ->default(['date' => today()])
+                    ->form([
+                        Forms\Components\DatePicker::make('date')
+                            ->label('Select date')
+                            ->default(today()),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when(
+                            $data['date'] ?? null,
+                            fn ($q, $date) => $q->whereHas('sale', fn ($sq) => $sq->whereDate('sale_date', $date))
+                        );
+                    }),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])

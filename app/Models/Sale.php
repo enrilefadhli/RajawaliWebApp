@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Sale extends Model
 {
@@ -30,5 +31,14 @@ class Sale extends Model
     public function details(): HasMany
     {
         return $this->hasMany(SaleDetail::class);
+    }
+
+    public function recalculateTotal(): void
+    {
+        $total = $this->details()
+            ->select(DB::raw('SUM(price * quantity) as total'))
+            ->value('total') ?? 0;
+
+        $this->forceFill(['total_amount' => $total])->saveQuietly();
     }
 }

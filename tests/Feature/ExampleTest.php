@@ -14,6 +14,13 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertRedirect('/admin');
+    }
+
+    public function test_login_route_redirects_to_filament_login(): void
+    {
+        $response = $this->get('/login');
+
+        $response->assertRedirect('/admin/login');
     }
 }

@@ -9,8 +9,10 @@ use App\Models\PurchaseRequest;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\FileUpload;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Storage;
 
@@ -61,7 +63,13 @@ class PurchaseOrderResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('code')->label('PO Code')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('purchaseRequest.code')->label('PR Code')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->colors([
+                        'warning' => 'ONPROGRESS',
+                        'success' => 'COMPLETED',
+                        'danger' => 'CANCELLED',
+                    ]),
                 Tables\Columns\TextColumn::make('total_amount')->money('idr', true),
                 Tables\Columns\TextColumn::make('attachment_path')
                     ->label('Attachment')
@@ -73,12 +81,42 @@ class PurchaseOrderResource extends Resource
                     ->options([
                         'ONPROGRESS' => 'ONPROGRESS',
                         'COMPLETED' => 'COMPLETED',
+                        'CANCELLED' => 'CANCELLED',
                     ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
+                Action::make('download_po')
+                    ->label('Download PO')
+                    ->icon('heroicon-m-arrow-down-tray')
+                    ->action(fn (PurchaseOrder $record) => self::downloadPurchaseOrderPdf($record)),
+                Action::make('cancel_po')
+                    ->label('Cancel PO')
+                    ->icon('heroicon-m-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn (PurchaseOrder $record) => $record->status !== 'COMPLETED' && $record->status !== 'CANCELLED')
+                    ->form([
+                        Forms\Components\Textarea::make('cancel_reason')
+                            ->label('Cancel reason')
+                            ->required()
+                            ->rows(3),
+                    ])
+                    ->action(function (array $data, PurchaseOrder $record) {
+                        $record->update([
+                            'status' => 'CANCELLED',
+                            'cancel_reason' => $data['cancel_reason'] ?? null,
+                            'cancelled_by' => auth()->user()?->getKey(),
+                            'cancelled_at' => now(),
+                        ]);
+
+                        Notification::make()
+                            ->title('PO cancelled')
+                            ->success()
+                            ->send();
+                    }),
                 Tables\Actions\EditAction::make()
-                    ->visible(fn ($record) => $record?->status !== 'COMPLETED'),
+                    ->visible(fn ($record) => $record?->status !== 'COMPLETED' && $record?->status !== 'CANCELLED'),
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
@@ -109,7 +147,7 @@ class PurchaseOrderResource extends Resource
 
     public static function canEdit($record): bool
     {
-        if ($record?->status === 'COMPLETED') {
+        if ($record?->status === 'COMPLETED' || $record?->status === 'CANCELLED') {
             return false;
         }
         return auth()->user()?->canApprovePurchaseOrders() ?? false;
@@ -118,5 +156,30 @@ class PurchaseOrderResource extends Resource
     public static function canDelete($record): bool
     {
         return auth()->user()?->canApprovePurchaseOrders() ?? false;
+    }
+
+    public static function downloadPurchaseOrderPdf(PurchaseOrder $purchaseOrder)
+    {
+        $purchaseOrder->loadMissing([
+            'purchaseRequest.supplier',
+            'purchaseRequest.requester',
+            'details.product',
+        ]);
+
+        $supplier = $purchaseOrder->purchaseRequest?->supplier;
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.purchase-order', [
+            'purchaseOrder' => $purchaseOrder,
+            'supplier' => $supplier,
+        ])->setPaper('a4');
+
+        $safeCode = preg_replace('/[^A-Za-z0-9\\-_]/', '-', (string) ($purchaseOrder->code ?? 'po'));
+        $filename = "{$safeCode}.pdf";
+
+        return response()->streamDownload(
+            fn () => print($pdf->output()),
+            $filename,
+            ['Content-Type' => 'application/pdf']
+        );
     }
 }

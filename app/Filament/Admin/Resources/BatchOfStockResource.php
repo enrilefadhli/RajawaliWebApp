@@ -16,7 +16,7 @@ class BatchOfStockResource extends Resource
 {
     protected static ?string $model = BatchOfStock::class;
 
-    protected static ?string $navigationGroup = 'Stock';
+    protected static ?string $navigationGroup = 'Stock System';
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
     protected static ?int $navigationSort = 10;
 
@@ -45,7 +45,9 @@ class BatchOfStockResource extends Resource
                 ->searchable()
                 ->preload()
                 ->required(),
-            Forms\Components\DatePicker::make('expiry_date'),
+            Forms\Components\DatePicker::make('expiry_date')
+                ->required()
+                ->label('Expiry Date'),
             Forms\Components\TextInput::make('quantity')->numeric()->required()->default(0),
         ])->columns(2);
     }

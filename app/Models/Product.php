@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Models\BatchOfStock;
 use App\Models\StockOpnameItem;
 use App\Models\StockAdjustmentItem;
@@ -81,5 +82,37 @@ class Product extends Model
     public function stockAdjustmentItems(): HasMany
     {
         return $this->hasMany(StockAdjustmentItem::class);
+    }
+
+    protected function availableStock(): Attribute
+    {
+        return Attribute::get(function () {
+            if (array_key_exists('available_stock_sum', $this->attributes)) {
+                return (int) ($this->attributes['available_stock_sum'] ?? 0);
+            }
+
+            if ($this->relationLoaded('batchOfStocks')) {
+                return (int) $this->batchOfStocks
+                    ->filter(function (BatchOfStock $batch) {
+                        if (($batch->quantity ?? 0) <= 0) {
+                            return false;
+                        }
+
+                        if (! $batch->expiry_date) {
+                            return true;
+                        }
+
+                        return $batch->expiry_date->toDateString() >= now()->toDateString();
+                    })
+                    ->sum('quantity');
+            }
+
+            return (int) $this->batchOfStocks()
+                ->where('quantity', '>', 0)
+                ->where(function ($query) {
+                    $query->whereNull('expiry_date')->orWhereDate('expiry_date', '>=', now()->toDateString());
+                })
+                ->sum('quantity');
+        });
     }
 }

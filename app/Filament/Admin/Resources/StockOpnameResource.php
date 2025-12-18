@@ -18,7 +18,7 @@ class StockOpnameResource extends Resource
 {
     protected static ?string $model = StockOpname::class;
 
-    protected static ?string $navigationGroup = 'Stock';
+    protected static ?string $navigationGroup = 'Stock System';
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?int $navigationSort = 20;
 
@@ -31,6 +31,7 @@ class StockOpnameResource extends Resource
             Forms\Components\Textarea::make('notes')->columnSpanFull(),
             Repeater::make('items')
                 ->relationship()
+                ->addActionLabel('Add items')
                 ->schema([
                     Forms\Components\Select::make('batch_of_stock_id')
                         ->label('Batch')

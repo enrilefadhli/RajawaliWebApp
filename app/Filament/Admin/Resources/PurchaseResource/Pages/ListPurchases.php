@@ -9,6 +9,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
 
 class ListPurchases extends ListRecords
 {
@@ -20,7 +21,10 @@ class ListPurchases extends ListRecords
         $canDirect = $user && $user->canApprovePurchaseOrders();
 
         return [
-            Actions\CreateAction::make(),
+            Actions\Action::make('new_purchase_request')
+                ->label('New Purchase Request')
+                ->icon('heroicon-o-plus')
+                ->action(fn () => Redirect::to(route('filament.admin.resources.purchase-requests.create'))),
             Actions\Action::make('direct_purchase')
                 ->label('Direct Purchase')
                 ->visible($canDirect)
@@ -39,7 +43,7 @@ class ListPurchases extends ListRecords
                         ->columnSpanFull()
                         ->minItems(1)
                         ->default(fn () => [['quantity' => 1]])
-                        ->addActionLabel('Add Item')
+                        ->addActionLabel('Add items')
                         ->schema([
                             Forms\Components\Select::make('product_id')
                                 ->label('Product')

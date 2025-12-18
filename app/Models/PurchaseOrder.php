@@ -19,10 +19,14 @@ class PurchaseOrder extends Model
         'status',
         'attachment_path',
         'total_amount',
+        'cancel_reason',
+        'cancelled_by',
+        'cancelled_at',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'cancelled_at' => 'datetime',
     ];
 
     protected static function booted(): void
