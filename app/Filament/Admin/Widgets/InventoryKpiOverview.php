@@ -77,11 +77,17 @@ class InventoryKpiOverview extends StatsOverviewWidget
             }
         );
 
+        $expiryStatusLabel = match (true) {
+            $kpis['expired_batches'] > 0 => $kpis['expired_batches'] . ' expired',
+            $kpis['near_expiry_batches'] > 0 => $kpis['near_expiry_batches'] . ' near expiry',
+            default => 'All good',
+        };
+
         return [
             Stat::make('Sales Today', $this->formatIdr($kpis['sales_total']))
                 ->description($kpis['sales_count'] . ' transactions')
                 ->descriptionIcon('heroicon-m-shopping-bag', IconPosition::Before)
-                ->color('success'),
+                ->color('primary'),
 
             Stat::make('Items Sold Today', number_format((int) $kpis['items_sold']))
                 ->description('Total quantity sold')
@@ -93,7 +99,7 @@ class InventoryKpiOverview extends StatsOverviewWidget
                 ->descriptionIcon('heroicon-m-exclamation-triangle', IconPosition::Before)
                 ->color($kpis['low_stock_count'] > 0 ? 'danger' : 'success'),
 
-            Stat::make('Expiry Watch', 'OK')
+            Stat::make('Expiry Watch', $expiryStatusLabel)
                 ->description('Expired: ' . (int) $kpis['expired_batches'] . ' | <=' . $nearExpiryDaysForKpi . 'd: ' . (int) $kpis['near_expiry_batches'])
                 ->descriptionIcon('heroicon-m-calendar-days', IconPosition::Before)
                 ->color(($kpis['expired_batches'] > 0) ? 'danger' : (($kpis['near_expiry_batches'] > 0) ? 'warning' : 'success')),

@@ -40,7 +40,13 @@ class ManageSystemSettings extends Page implements HasForms
                             ->label('Enable low stock alerts')
                             ->default(false)
                             ->columnSpanFull()
-                            ->live(debounce: 500),
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                if (! $state) {
+                                    $set('low_stock_threshold_enabled', false);
+                                    self::maybeDisableAllNotifications($set, $get, $state);
+                                }
+                            }),
                         Forms\Components\Toggle::make('low_stock_threshold_enabled')
                             ->label('Enable stock threshold alerts')
                             ->default(false)
@@ -66,7 +72,13 @@ class ManageSystemSettings extends Page implements HasForms
                             ->label('Enable expiry alerts')
                             ->default(false)
                             ->columnSpanFull()
-                            ->live(debounce: 500),
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                if (! $state) {
+                                    $set('expiry_threshold_enabled', false);
+                                    self::maybeDisableAllNotifications($set, $get, $state);
+                                }
+                            }),
                         Forms\Components\Toggle::make('expiry_threshold_enabled')
                             ->label('Enable near expiry threshold alerts')
                             ->default(true)
@@ -93,29 +105,41 @@ class ManageSystemSettings extends Page implements HasForms
                             ->default(true)
                             ->disabled(fn (Get $get) => ! $get('low_stock_alerts_enabled') && ! $get('expiry_alerts_enabled'))
                             ->columnSpanFull()
-                            ->live(debounce: 500),
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                if (! $state && ! self::isAnyAlertEnabled($get)) {
+                                    $set('telegram_bot_token', null);
+                                    $set('telegram_chat_id', null);
+                                }
+                            }),
                         Forms\Components\TextInput::make('telegram_bot_token')
                             ->label('Telegram Bot Token')
                             ->password()
                             ->revealable()
-                            ->helperText('Required if any Telegram notifications are enabled.')
+                            ->helperText('Optional if any Telegram notifications are enabled. Leave blank to use .env')
                             ->live(onBlur: true)
                             ->disabled(fn (Get $get) => ! self::isAnyTelegramEnabled($get)),
                         Forms\Components\TextInput::make('telegram_chat_id')
                             ->label('Telegram Chat ID')
-                            ->helperText('Chat or channel ID for the bot to send messages to.')
+                            ->helperText('Chat or channel ID for the bot to send messages to. Leave blank to use .env')
                             ->live(onBlur: true)
                             ->disabled(fn (Get $get) => ! self::isAnyTelegramEnabled($get)),
                     ])
                     ->columns(2),
-                Forms\Components\Section::make('Email Alerts (SMTP override)')
+                Forms\Components\Section::make('Email SMTP Alerts')
                     ->schema([
                         Forms\Components\Toggle::make('low_stock_email_enabled')
                             ->label('Enable email notifications')
                             ->default(true)
                             ->disabled(fn (Get $get) => ! $get('low_stock_alerts_enabled') && ! $get('expiry_alerts_enabled'))
                             ->columnSpanFull()
-                            ->live(debounce: 500),
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                if (! $state && ! self::isAnyAlertEnabled($get)) {
+                                    $set('mail_username', null);
+                                    $set('mail_password', null);
+                                }
+                            }),
                         Forms\Components\TextInput::make('mail_username')
                             ->label('SMTP Username')
                             ->helperText('Optional override for mail username. Leave blank to use .env')
@@ -142,6 +166,20 @@ class ManageSystemSettings extends Page implements HasForms
     protected static function isAnyEmailEnabled(Get $get): bool
     {
         return (bool) (($get('low_stock_alerts_enabled') || $get('expiry_alerts_enabled')) && $get('low_stock_email_enabled'));
+    }
+
+    protected static function isAnyAlertEnabled(Get $get): bool
+    {
+        return (bool) ($get('low_stock_alerts_enabled') || $get('expiry_alerts_enabled'));
+    }
+
+    protected static function maybeDisableAllNotifications(callable $set, Get $get, bool $latestState): void
+    {
+        // If both alert parents are off, also disable child notification toggles.
+        if (! $latestState && ! self::isAnyAlertEnabled($get)) {
+            $set('low_stock_telegram_enabled', false);
+            $set('low_stock_email_enabled', false);
+        }
     }
 
     public function save(): void

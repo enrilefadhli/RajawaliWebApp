@@ -22,6 +22,8 @@ use App\Filament\Admin\Pages\Auth\Login;
 use App\Filament\Admin\Pages\ManageSystemSettings;
 use App\Filament\Admin\Widgets\InventoryKpiOverview;
 use App\Filament\Admin\Widgets\AdminAccountWidget;
+use App\Filament\Admin\Widgets\PurchasePipelineStats;
+use App\Filament\Admin\Widgets\StockFlowChart;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -58,6 +60,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
                 InventoryKpiOverview::class,
+                PurchasePipelineStats::class,
+                StockFlowChart::class,
                 AdminAccountWidget::class,
             ])
             ->middleware([
