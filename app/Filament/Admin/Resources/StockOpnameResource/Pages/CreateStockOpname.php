@@ -8,9 +8,11 @@ use App\Models\StockAdjustmentItem;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Filament\Admin\Concerns\RedirectsToIndex;
 
 class CreateStockOpname extends CreateRecord
 {
+    use RedirectsToIndex;
     protected static string $resource = StockOpnameResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

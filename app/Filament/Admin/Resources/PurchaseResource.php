@@ -132,7 +132,7 @@ class PurchaseResource extends Resource
 
     protected static function allowedRoles(): array
     {
-        return ['ADMIN', 'PURCHASING'];
+        return ['ADMIN', 'MANAGER'];
     }
 
     public static function canCreate(): bool

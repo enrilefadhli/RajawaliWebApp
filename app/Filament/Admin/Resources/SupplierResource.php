@@ -23,10 +23,27 @@ class SupplierResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('supplier_code')->maxLength(255),
+            Forms\Components\TextInput::make('supplier_code')
+                ->label('Supplier Code')
+                ->required()
+                ->minLength(4)
+                ->maxLength(4)
+                ->rule('size:4')
+                ->helperText('Use exactly 4 characters (e.g., UNVR, NEST, INDO)'),
             Forms\Components\TextInput::make('supplier_name')->required()->maxLength(255),
-            Forms\Components\TextInput::make('supplier_phone')->maxLength(255),
-            Forms\Components\TextInput::make('supplier_address')->maxLength(255),
+            Forms\Components\TextInput::make('supplier_phone')
+                ->label('Phone Number')
+                ->required()
+                ->tel()
+                ->minLength(8)
+                ->maxLength(20)
+                ->rule('regex:/^[0-9+\\-\\s]+$/')
+                ->helperText('Include digits (and +, -, spaces if needed), 8-20 characters.'),
+            Forms\Components\TextInput::make('supplier_address')
+                ->label('Supplier Email')
+                ->email()
+                ->maxLength(255)
+                ->helperText('Supplier email (optional).'),
         ])->columns(2);
     }
 
@@ -38,7 +55,7 @@ class SupplierResource extends Resource
                 Tables\Columns\TextColumn::make('supplier_code')->label('Code')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('supplier_name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('supplier_phone'),
-                Tables\Columns\TextColumn::make('supplier_address'),
+                Tables\Columns\TextColumn::make('supplier_address')->label('Supplier Email'),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->actions([

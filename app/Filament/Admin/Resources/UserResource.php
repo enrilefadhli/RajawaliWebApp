@@ -89,6 +89,11 @@ class UserResource extends Resource
         ];
     }
 
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->canManageUsers() ?? false;
+    }
+
     public static function canViewAny(): bool
     {
         return auth()->user()?->canManageUsers() ?? false;

@@ -12,7 +12,7 @@
         .col { display: inline-block; vertical-align: top; }
         .col-6 { width: 49%; }
         .box { border: 1px solid #e5e7eb; padding: 10px; border-radius: 6px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; table-layout: fixed; }
         th, td { border: 1px solid #e5e7eb; padding: 8px; }
         th { background: #f3f4f6; text-align: left; }
         .right { text-align: right; }
@@ -56,10 +56,10 @@
                 <th style="width: 36px;" class="center">No</th>
                 <th>Product</th>
                 <th style="width: 110px;">Product Code</th>
-                <th style="width: 85px;" class="center">Qty</th>
+                <th style="width: 80px;" class="center">Qty</th>
+                <th style="width: 95px;" class="center">Expiry</th>
                 <th style="width: 110px;" class="right">Unit Price</th>
                 <th style="width: 120px;" class="right">Subtotal</th>
-                <th style="width: 95px;" class="center">Expiry</th>
             </tr>
         </thead>
         <tbody>
@@ -72,9 +72,9 @@
                     <td>{{ $detail->product?->product_name ?? '-' }}</td>
                     <td>{{ $detail->product?->product_code ?? '-' }}</td>
                     <td class="center">{{ (int) $detail->quantity }}</td>
+                    <td class="center">{{ $detail->expiry_date ? $detail->expiry_date->format('d/m/Y') : '-' }}</td>
                     <td class="right">IDR {{ number_format((float) ($detail->unit_price ?? 0), 0, ',', '.') }}</td>
                     <td class="right">IDR {{ number_format((float) $subtotal, 0, ',', '.') }}</td>
-                    <td class="center">{{ $detail->expiry_date ? $detail->expiry_date->format('d/m/Y') : '-' }}</td>
                 </tr>
             @endforeach
 
@@ -98,4 +98,3 @@
     </div>
 </body>
 </html>
-

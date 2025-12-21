@@ -1,17 +1,5 @@
 <table>
     <tr>
-        <td><strong>Summary Report</strong></td>
-    </tr>
-    <tr>
-        <td>Category:</td>
-        <td>{{ $filters['category'] ?? 'All' }}</td>
-    </tr>
-    <tr>
-        <td>Status:</td>
-        <td>{{ $filters['status'] ?? 'All' }}</td>
-    </tr>
-    <tr><td></td></tr>
-    <tr>
         <th>Product Code</th>
         <th>SKU</th>
         <th>Product Name</th>

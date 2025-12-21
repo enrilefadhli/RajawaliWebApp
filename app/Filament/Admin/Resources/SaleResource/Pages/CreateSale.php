@@ -5,9 +5,11 @@ namespace App\Filament\Admin\Resources\SaleResource\Pages;
 use App\Filament\Admin\Resources\SaleResource;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Support\Arr;
+use App\Filament\Admin\Concerns\RedirectsToIndex;
 
 class CreateSale extends CreateRecord
 {
+    use RedirectsToIndex;
     protected static string $resource = SaleResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

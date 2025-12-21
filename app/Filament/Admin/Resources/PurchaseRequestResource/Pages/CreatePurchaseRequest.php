@@ -6,9 +6,11 @@ use App\Filament\Admin\Resources\PurchaseRequestResource;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Admin\Concerns\RedirectsToIndex;
 
 class CreatePurchaseRequest extends CreateRecord
 {
+    use RedirectsToIndex;
     protected static string $resource = PurchaseRequestResource::class;
 
     protected function mutateFormDataBeforeCreate(array $data): array

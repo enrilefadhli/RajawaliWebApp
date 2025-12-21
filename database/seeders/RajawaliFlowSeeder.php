@@ -67,7 +67,7 @@ class RajawaliFlowSeeder extends Seeder
                 'name' => 'Purchasing',
                 'phone' => '-',
                 'address' => '-',
-                'role' => 'STAFF',
+                'role' => 'PURCHASING',
             ]
         );
         $purchasing->roles()->syncWithoutDetaching([$purchasingRole->id]);
@@ -80,7 +80,7 @@ class RajawaliFlowSeeder extends Seeder
                 'name' => 'Warehouse',
                 'phone' => '-',
                 'address' => '-',
-                'role' => 'STAFF',
+                'role' => 'WAREHOUSE',
             ]
         );
         $warehouse->roles()->syncWithoutDetaching([$warehouseRole->id]);
@@ -93,7 +93,7 @@ class RajawaliFlowSeeder extends Seeder
                 'name' => 'Cashier',
                 'phone' => '-',
                 'address' => '-',
-                'role' => 'STAFF',
+                'role' => 'CASHIER',
             ]
         );
         $cashier->roles()->syncWithoutDetaching([$cashierRole->id]);
@@ -103,7 +103,7 @@ class RajawaliFlowSeeder extends Seeder
             [
                 'supplier_code' => 'UNVR',
                 'supplier_phone' => '021-804-70000',
-                'supplier_address' => 'Grha Unilever, BSD Green Office Park, Tangerang',
+                'supplier_address' => 'contact@unilever.co.id',
             ]
         );
 

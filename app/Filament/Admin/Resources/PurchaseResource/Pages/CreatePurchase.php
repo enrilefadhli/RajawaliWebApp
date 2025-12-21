@@ -6,9 +6,11 @@ use App\Filament\Admin\Resources\PurchaseResource;
 use App\Services\PurchaseService;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Admin\Concerns\RedirectsToIndex;
 
 class CreatePurchase extends CreateRecord
 {
+    use RedirectsToIndex;
     protected static string $resource = PurchaseResource::class;
 
     protected function handleRecordCreation(array $data): \App\Models\Purchase

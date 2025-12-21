@@ -88,6 +88,7 @@ class ProductSeeder extends Seeder
                 'discount_percent' => null,
                 'discount_amount' => null,
                 'minimum_stock' => 10,
+                'status' => 'DISABLED',
             ]);
 
             $product->save();

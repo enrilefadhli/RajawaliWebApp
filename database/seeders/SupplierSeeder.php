@@ -14,7 +14,7 @@ class SupplierSeeder extends Seeder
                 'supplier_code' => 'UNVR',
                 'supplier_name' => 'UNILEVER INDONESIA',
                 'supplier_phone' => '021-804-70000',
-                'supplier_address' => 'Grha Unilever, BSD Green Office Park, Tangerang',
+                'supplier_address' => 'contact@unilever.co.id',
             ],
             [
                 'supplier_code' => 'UNSP',

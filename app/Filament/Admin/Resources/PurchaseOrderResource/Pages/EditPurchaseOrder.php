@@ -9,9 +9,11 @@ use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Notifications\Notification;
 use Illuminate\Validation\ValidationException;
+use App\Filament\Admin\Concerns\RedirectsToIndex;
 
 class EditPurchaseOrder extends EditRecord
 {
+    use RedirectsToIndex;
     protected static string $resource = PurchaseOrderResource::class;
 
     protected function getSaveFormAction(): Action

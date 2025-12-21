@@ -108,12 +108,15 @@ class User extends Authenticatable implements FilamentUser
 
     public function canApprovePurchaseOrders(): bool
     {
-        return $this->hasRole('ADMIN') || $this->hasRole('PURCHASING');
+        return $this->hasRole('ADMIN')
+            || $this->hasRole('MANAGER')
+            || $this->hasRole('PURCHASING');
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->hasRole('ADMIN')
+            || $this->hasRole('MANAGER')
             || $this->hasRole('PURCHASING')
             || $this->hasRole('WAREHOUSE')
             || $this->hasRole('CASHIER');

@@ -39,14 +39,8 @@ class RoleResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->actions([])
+            ->bulkActions([]);
     }
 
     public static function getPages(): array
@@ -62,6 +56,26 @@ class RoleResource extends Resource
     public static function canViewAny(): bool
     {
         return auth()->user()?->canManageUsers() ?? false;
+    }
+
+    public static function canView($record): bool
+    {
+        return auth()->user()?->canManageUsers() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
     }
 
     public static function shouldRegisterNavigation(): bool

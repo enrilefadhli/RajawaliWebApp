@@ -150,8 +150,7 @@ class ProductResource extends Resource
                         'ACTIVE' => 'Active',
                         'STORED' => 'Stored',
                         'DISABLED' => 'Disabled',
-                    ])
-                    ->default('ACTIVE'),
+                    ]),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

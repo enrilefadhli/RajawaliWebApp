@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleSeeder::class);
 
         $adminRole = Role::firstOrCreate(['name' => 'ADMIN']);
-        $staffRole = Role::firstOrCreate(['name' => 'STAFF']);
+        $managerRole = Role::firstOrCreate(['name' => 'MANAGER']);
+        $purchasingRole = Role::firstOrCreate(['name' => 'PURCHASING']);
 
         $admin = User::factory()->create([
             'username' => 'abdulazis',
@@ -38,9 +39,20 @@ class DatabaseSeeder extends Seeder
             'name' => 'Ahmad Ferdy',
             'phone' => '1234567890',
             'address' => 'Cilincing',
-            'role' => 'STAFF',
+            'role' => 'PURCHASING',
         ]);
-        $staff->roles()->sync([$staffRole->id]);
+        $staff->roles()->sync([$purchasingRole->id]);
+
+        $manager = User::factory()->create([
+            'username' => 'manager',
+            'email' => 'manager@rajawali.com',
+            'password' => Hash::make('manager1234'),
+            'name' => 'Purchasing Manager',
+            'phone' => '1234567890',
+            'address' => 'Cilincing',
+            'role' => 'MANAGER',
+        ]);
+        $manager->roles()->sync([$managerRole->id]);
 
         $enrile = User::updateOrCreate(
             ['username' => 'enrilefadhli'],
@@ -58,6 +70,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CategorySeeder::class,
             SupplierSeeder::class,
+            ProductSeeder::class,
             RajawaliFlowSeeder::class,
         ]);
     }
