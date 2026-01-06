@@ -9,6 +9,7 @@ use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -68,11 +69,12 @@ class ListBatchOfStocks extends ListRecords
                             'application/vnd.ms-excel',
                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                         ])
+                        ->disk('local')
                         ->directory('imports')
                         ->preserveFilenames(),
                 ])
                 ->action(function (array $data) {
-                    $path = storage_path('app/' . $data['file']);
+                    $path = Storage::disk('local')->path($data['file']);
                     $rows = SimpleExcelReader::create($path)->getRows();
                     $errors = [];
                     $imported = 0;

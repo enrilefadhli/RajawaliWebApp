@@ -58,12 +58,12 @@ chown -R www-data:www-data storage bootstrap/cache
 chmod -R ug+rwx storage bootstrap/cache
 ```
 
-## 8) Konfigurasi Nginx (catch-all; ganti ke domain setelah DNS siap)
+## 8) Konfigurasi Nginx (domain aktif: tokorajawali.online)
 File `/etc/nginx/sites-available/rajawali`:
 ```nginx
 server {
     listen 80;
-    server_name _;  # ganti ke tokorajawali.online www.tokorajawali.online setelah DNS aktif
+    server_name tokorajawali.online www.tokorajawali.online;
     root /var/www/rajawali/RajawaliWebApp/public;
     index index.php index.html;
 
@@ -114,16 +114,16 @@ Tes:
 dig @1.1.1.1 tokorajawali.online +short
 whois tokorajawali.online | grep -i "Name Server"
 ```
-Selagi menunggu propagasi, gunakan APP_URL dan akses via IP:
+Gunakan domain untuk APP_URL:
 ```
-APP_URL=http://72.61.215.250
+APP_URL=https://tokorajawali.online
 ```
 
 ## 12) Tes akses
-- Browser: `http://72.61.215.250` (atau domain saat DNS aktif).
+- Browser: `https://tokorajawali.online` (atau `http://` jika SSL belum aktif).
 - Stop `php artisan serve` (tidak diperlukan dengan Nginx).
 
-## 13) HTTPS (opsional, setelah DNS aktif)
+## 13) HTTPS (setelah DNS aktif)
 ```bash
 apt install -y certbot python3-certbot-nginx
 certbot --nginx -d tokorajawali.online -d www.tokorajawali.online
