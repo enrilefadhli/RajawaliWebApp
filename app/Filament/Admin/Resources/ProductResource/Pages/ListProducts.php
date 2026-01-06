@@ -122,6 +122,15 @@ class ListProducts extends ListRecords
                             $discountAmountRaw = trim((string) ($row['discount_amount'] ?? ''));
                             $discountPercent = $discountPercentRaw === '' ? null : (float) $discountPercentRaw;
                             $discountAmount = $discountAmountRaw === '' ? null : (float) $discountAmountRaw;
+                            if ($discountPercent !== null && $discountPercent > 0) {
+                                $discountPercent = max(0, min(100, $discountPercent));
+                                $discountAmount = null;
+                            } else {
+                                $discountPercent = null;
+                                if ($discountAmount !== null) {
+                                    $discountAmount = max(0, min($sellingPrice, $discountAmount));
+                                }
+                            }
 
                             if ($productCode === '') {
                                 $productCode = ProductResource::generateProductCodeByCategory($category->id);

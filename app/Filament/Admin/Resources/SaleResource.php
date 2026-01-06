@@ -97,7 +97,7 @@ class SaleResource extends Resource
                                         ->find($state);
 
                                     $set('available_quantity', (int) ($product?->available_stock_sum ?? 0));
-                                    $set('price', (float) ($product?->selling_price ?? 0));
+                                    $set('price', (float) ($product?->effectiveSellingPrice() ?? 0));
                                 }),
                             Forms\Components\Hidden::make('available_quantity')
                                 ->dehydrated(false),

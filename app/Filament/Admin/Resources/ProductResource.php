@@ -64,8 +64,30 @@ class ProductResource extends Resource
             Forms\Components\TextInput::make('variant')->maxLength(255),
             Forms\Components\TextInput::make('purchase_price')->numeric()->required(),
             Forms\Components\TextInput::make('selling_price')->numeric()->required(),
-            Forms\Components\TextInput::make('discount_percent')->numeric()->nullable(),
-            Forms\Components\TextInput::make('discount_amount')->numeric()->nullable(),
+            Forms\Components\TextInput::make('discount_percent')
+                ->numeric()
+                ->nullable()
+                ->minValue(0)
+                ->maxValue(100)
+                ->reactive()
+                ->afterStateUpdated(function ($state, Set $set) {
+                    $value = (float) ($state ?? 0);
+                    if ($value > 0) {
+                        $set('discount_amount', null);
+                    }
+                }),
+            Forms\Components\TextInput::make('discount_amount')
+                ->numeric()
+                ->nullable()
+                ->minValue(0)
+                ->maxValue(fn (Get $get) => $get('selling_price') ?: null)
+                ->reactive()
+                ->afterStateUpdated(function ($state, Set $set) {
+                    $value = (float) ($state ?? 0);
+                    if ($value > 0) {
+                        $set('discount_percent', null);
+                    }
+                }),
             Forms\Components\TextInput::make('minimum_stock')->numeric()->required(),
             Forms\Components\Select::make('status')
                 ->label('Status')

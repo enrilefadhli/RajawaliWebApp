@@ -84,6 +84,25 @@ class Product extends Model
         return $this->hasMany(StockAdjustmentItem::class);
     }
 
+    public function effectiveSellingPrice(): float
+    {
+        $price = (float) ($this->selling_price ?? 0);
+        $discountPercent = $this->discount_percent === null ? null : (float) $this->discount_percent;
+        $discountAmount = $this->discount_amount === null ? null : (float) $this->discount_amount;
+
+        if ($discountPercent !== null && $discountPercent > 0) {
+            $discountPercent = max(0, min(100, $discountPercent));
+            $discount = $price * ($discountPercent / 100);
+        } else {
+            $discountAmount = $discountAmount ?? 0;
+            $discount = max(0, min($price, $discountAmount));
+        }
+
+        $final = $price - $discount;
+
+        return $final < 0 ? 0 : $final;
+    }
+
     protected function availableStock(): Attribute
     {
         return Attribute::get(function () {
