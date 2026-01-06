@@ -118,6 +118,10 @@ class ListProducts extends ListRecords
                             $purchasePrice = (float) ($row['purchase_price'] ?? 0);
                             $sellingPrice = (float) ($row['selling_price'] ?? 0);
                             $minStock = (int) ($row['minimum_stock'] ?? 0);
+                            $discountPercentRaw = trim((string) ($row['discount_percent'] ?? ''));
+                            $discountAmountRaw = trim((string) ($row['discount_amount'] ?? ''));
+                            $discountPercent = $discountPercentRaw === '' ? null : (float) $discountPercentRaw;
+                            $discountAmount = $discountAmountRaw === '' ? null : (float) $discountAmountRaw;
 
                             if ($productCode === '') {
                                 $productCode = ProductResource::generateProductCodeByCategory($category->id);
@@ -132,8 +136,8 @@ class ListProducts extends ListRecords
                                 'variant' => $row['variant'] ?? null,
                                 'purchase_price' => $purchasePrice,
                                 'selling_price' => $sellingPrice,
-                                'discount_percent' => $row['discount_percent'] ?? null,
-                                'discount_amount' => $row['discount_amount'] ?? null,
+                                'discount_percent' => $discountPercent,
+                                'discount_amount' => $discountAmount,
                                 'minimum_stock' => $minStock,
                                 'status' => $status,
                             ]);
