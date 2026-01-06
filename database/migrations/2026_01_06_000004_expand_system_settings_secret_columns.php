@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('system_settings', function (Blueprint $table) {
+            $table->text('telegram_bot_token')->nullable()->change();
+            $table->text('telegram_chat_id')->nullable()->change();
+            $table->text('mail_username')->nullable()->change();
+            $table->text('mail_password')->nullable()->change();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('system_settings', function (Blueprint $table) {
+            $table->string('telegram_bot_token')->nullable()->change();
+            $table->string('telegram_chat_id')->nullable()->change();
+            $table->string('mail_username')->nullable()->change();
+            $table->string('mail_password')->nullable()->change();
+        });
+    }
+};
