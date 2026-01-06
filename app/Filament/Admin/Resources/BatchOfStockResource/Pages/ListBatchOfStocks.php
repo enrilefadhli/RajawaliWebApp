@@ -8,6 +8,7 @@ use App\Models\Product;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -125,7 +126,10 @@ class ListBatchOfStocks extends ListRecords
                         $message .= ' Some rows failed: ' . implode(' | ', $errors);
                     }
 
-                    $this->notify('success', $message);
+                    Notification::make()
+                        ->title($message)
+                        ->success()
+                        ->send();
                 }),
         ];
     }
