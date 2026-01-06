@@ -32,6 +32,22 @@ class PurchaseOrderResource extends Resource
             Forms\Components\Placeholder::make('code')
                 ->label('PO Code')
                 ->content(fn (?PurchaseOrder $record) => $record?->code ?? 'Will be generated on save'),
+            Forms\Components\Placeholder::make('expiry_notice')
+                ->label('Expiry Date Check')
+                ->content(function (?PurchaseOrder $record) {
+                    if (! $record) {
+                        return 'Expiry dates will be validated before completion.';
+                    }
+
+                    $missing = $record->details()->whereNull('expiry_date')->count();
+                    if ($missing <= 0) {
+                        return 'All items have expiry dates.';
+                    }
+
+                    return "Missing expiry date for {$missing} item(s).";
+                })
+                ->visible(fn (?PurchaseOrder $record) => (bool) $record)
+                ->columnSpanFull(),
             Forms\Components\Select::make('purchase_request_id')
                 ->relationship('purchaseRequest', 'id')
                 ->required(fn (string $operation): bool => $operation === 'create')

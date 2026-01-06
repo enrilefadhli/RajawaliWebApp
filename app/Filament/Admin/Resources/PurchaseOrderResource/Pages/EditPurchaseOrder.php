@@ -26,6 +26,11 @@ class EditPurchaseOrder extends EditRecord
     {
         $missingExpiry = $this->record->details()->whereNull('expiry_date')->count();
         if ($missingExpiry > 0) {
+            Notification::make()
+                ->title('Unable to complete PO')
+                ->body('Please set an expiry date for all items before completing this PO.')
+                ->danger()
+                ->send();
             throw ValidationException::withMessages([
                 'details' => 'Please set an expiry date for all items before completing this PO.',
             ]);
