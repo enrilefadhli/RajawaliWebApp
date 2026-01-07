@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\PurchaseRequestResource\Pages;
 use App\Filament\Admin\Resources\PurchaseRequestResource\RelationManagers\DetailsRelationManager;
 use App\Filament\Admin\Resources\PurchaseRequestResource\RelationManagers\ApprovalsRelationManager;
-use App\Models\Category;
 use App\Models\Product;
 use App\Models\PurchaseRequest;
 use Filament\Actions\StaticAction;
@@ -29,71 +28,105 @@ class PurchaseRequestResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Placeholder::make('code')
-                ->label('PR Code')
-                ->content(fn (?PurchaseRequest $record) => $record?->code ?? 'Will be generated on save'),
-            Forms\Components\Placeholder::make('requested_by')
-                ->label('Requested By')
-                ->content(fn () => Auth::user()?->name ?? '-'),
-            Forms\Components\Select::make('supplier_id')
-                ->relationship('supplier', 'supplier_name')
-                ->required()
-                ->searchable()
-                ->preload(),
-            Forms\Components\Textarea::make('request_note')->columnSpanFull(),
-            Forms\Components\Repeater::make('details')
-                ->columnSpanFull()
-                ->label('Products')
-                ->relationship('details')
-                ->addActionLabel('Add product')
-                ->extraAttributes(['class' => 'pr-details-left'])
+            Forms\Components\Section::make('Request Info')
                 ->schema([
-                    Forms\Components\Select::make('category_id')
-                        ->label('Category')
-                        ->options(fn () => Category::pluck('category_name', 'id'))
-                        ->searchable()
-                        ->preload()
-                        ->reactive()
-                        ->afterStateUpdated(fn ($state, callable $set) => $set('product_id', null))
-                        ->required(),
-                    Forms\Components\Select::make('product_id')
-                        ->options(function (callable $get) {
-                            $categoryId = $get('category_id');
-                            $query = Product::query();
-                            if ($categoryId) {
-                                $query->where('category_id', $categoryId);
-                            }
-                            return $query->pluck('product_name', 'id');
-                        })
-                        ->reactive()
-                        ->afterStateUpdated(function ($state, callable $set) {
-                            $price = (int) (Product::find($state)?->purchase_price ?? 0);
-                            $set('expected_unit_price', $price);
-                        })
+                    Forms\Components\Placeholder::make('code')
+                        ->label('PR Code')
+                        ->content(fn (?PurchaseRequest $record) => $record?->code ?? 'Will be generated on save'),
+                    Forms\Components\Placeholder::make('requested_by')
+                        ->label('Requested By')
+                        ->content(fn () => Auth::user()?->name ?? '-'),
+                    Forms\Components\Select::make('supplier_id')
+                        ->relationship('supplier', 'supplier_name')
                         ->required()
                         ->searchable()
-                        ->preload()
-                        ->label('Product'),
-                    Forms\Components\TextInput::make('quantity')
-                        ->numeric()
-                        ->minValue(1)
-                        ->required()
-                        ->label('Quantity'),
-                    Forms\Components\TextInput::make('expected_unit_price')
-                        ->label('Expected Unit Price')
-                        ->numeric()
-                        ->minValue(0)
-                        ->step(0.01)
-                        ->reactive()
-                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                            $set('expected_unit_price', $state);
-                        })
-                        ->dehydrated(true),
+                        ->preload(),
+                    Forms\Components\Textarea::make('request_note')
+                        ->columnSpanFull(),
                 ])
-                ->columns(4)
-                ->minItems(1)
-                ->default(fn () => [['quantity' => 1]]),
-        ])->columns(2);
+                ->columns(2),
+            Forms\Components\Section::make('Items')
+                ->schema([
+                    Forms\Components\Repeater::make('details')
+                        ->columnSpanFull()
+                        ->label('Products')
+                        ->relationship('details')
+                        ->addActionLabel('Add product')
+                        ->extraAttributes(['class' => 'pr-details-left'])
+                        ->schema([
+                            Forms\Components\Select::make('product_id')
+                                ->label('Product')
+                                ->searchable()
+                                ->preload()
+                                ->getSearchResultsUsing(function (string $search): array {
+                                    return Product::query()
+                                        ->with('category')
+                                        ->where(function ($query) use ($search) {
+                                            $query
+                                                ->where('product_name', 'like', "%{$search}%")
+                                                ->orWhere('product_code', 'like', "%{$search}%")
+                                                ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                                                    $categoryQuery->where('category_name', 'like', "%{$search}%");
+                                                });
+                                        })
+                                        ->limit(50)
+                                        ->get()
+                                        ->mapWithKeys(function (Product $product) {
+                                            $category = $product->category?->category_name ?? '-';
+                                            $code = $product->product_code ?? '';
+                                            $label = trim("{$product->product_name} {$code}") . " - {$category}";
+                                            return [$product->getKey() => $label];
+                                        })
+                                        ->toArray();
+                                })
+                                ->getOptionLabelUsing(function ($value): ?string {
+                                    if (! $value) {
+                                        return null;
+                                    }
+
+                                    $product = Product::query()
+                                        ->with('category')
+                                        ->find($value);
+
+                                    if (! $product) {
+                                        return null;
+                                    }
+
+                                    $category = $product->category?->category_name ?? '-';
+                                    $code = $product->product_code ?? '';
+                                    return trim("{$product->product_name} {$code}") . " - {$category}";
+                                })
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    $price = (int) (Product::find($state)?->purchase_price ?? 0);
+                                    $set('expected_unit_price', $price);
+                                })
+                                ->required()
+                                ->helperText('Search by product name, code, or category.'),
+                            Forms\Components\TextInput::make('quantity')
+                                ->numeric()
+                                ->minValue(1)
+                                ->required()
+                                ->label('Quantity')
+                                ->default(1),
+                            Forms\Components\TextInput::make('expected_unit_price')
+                                ->label('Expected Unit Price')
+                                ->numeric()
+                                ->minValue(0)
+                                ->step(0.01)
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                    $set('expected_unit_price', $state);
+                                })
+                                ->dehydrated(true),
+                        ])
+                        ->columns(3)
+                        ->minItems(1)
+                        ->default(fn () => [['quantity' => 1]]),
+                ])
+                ->columns(1)
+                ->columnSpanFull(),
+        ]);
     }
 
     public static function table(Table $table): Table
