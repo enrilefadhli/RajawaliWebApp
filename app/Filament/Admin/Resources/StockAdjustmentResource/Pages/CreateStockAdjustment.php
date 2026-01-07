@@ -14,7 +14,7 @@ class CreateStockAdjustment extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['created_by'] = Auth::id();
+        $data['created_by'] = Auth::user()?->getKey();
 
         return $data;
     }

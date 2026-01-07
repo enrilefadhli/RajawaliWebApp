@@ -52,7 +52,7 @@ class ApprovalsRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->mutateFormDataUsing(function (array $data) {
-                        $data['approved_by'] = Auth::id();
+                        $data['approved_by'] = Auth::user()?->getKey();
                         $data['approved_at'] = $data['approved_at'] ?? now();
 
                         return $data;
