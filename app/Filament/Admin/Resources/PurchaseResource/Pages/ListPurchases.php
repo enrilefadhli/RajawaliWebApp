@@ -18,7 +18,7 @@ class ListPurchases extends ListRecords
     protected function getHeaderActions(): array
     {
         $user = Auth::user();
-        $canDirect = $user && $user->canApprovePurchaseOrders();
+        $canDirect = $user && $user->canAccessPurchasing();
 
         return [
             Actions\Action::make('new_purchase_request')
@@ -47,7 +47,14 @@ class ListPurchases extends ListRecords
                         ->schema([
                             Forms\Components\Select::make('product_id')
                                 ->label('Product')
-                                ->options(fn () => Product::whereIn('status', ['ACTIVE', 'STORED'])->pluck('product_name', 'id'))
+                                ->options(function () {
+                                    return Product::whereIn('status', ['ACTIVE', 'STORED'])
+                                        ->orderBy('product_name')
+                                        ->get()
+                                        ->mapWithKeys(fn ($product) => [
+                                            $product->id => trim("{$product->product_name} {$product->product_code}" . ($product->variant ? " ({$product->variant})" : '')),
+                                        ]);
+                                })
                                 ->searchable()
                                 ->preload()
                                 ->required()
@@ -72,7 +79,10 @@ class ListPurchases extends ListRecords
                                 ->minValue(0)
                                 ->required()
                                 ->prefix('Rp')
-                                ->step(0.01),
+                                ->step(0.01)
+                                ->stripCharacters(',')
+                                ->mask(\Filament\Support\RawJs::make('$money($input)'))
+                                ->dehydrateStateUsing(fn ($state) => $state === null ? null : str_replace(',', '', (string) $state)),
                         ])
                         ->columns(4),
                 ])

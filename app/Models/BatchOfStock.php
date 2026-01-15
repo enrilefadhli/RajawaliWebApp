@@ -14,10 +14,14 @@ use App\Notifications\LowStockNotification;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\SystemSetting;
+use App\Models\StockMovement;
+use Illuminate\Support\Facades\Auth;
 
 class BatchOfStock extends Model
 {
     use HasFactory;
+
+    public bool $skipMovementLog = false;
 
     protected $fillable = [
         'product_id',
@@ -49,6 +53,30 @@ class BatchOfStock extends Model
             self::notifyIfLow($batch->product_id);
         });
 
+        static::created(function (BatchOfStock $batch) {
+            if ($batch->skipMovementLog) {
+                return;
+            }
+
+            $quantity = (int) $batch->quantity;
+            if ($quantity <= 0) {
+                return;
+            }
+
+            StockMovement::create([
+                'product_id' => $batch->product_id,
+                'batch_of_stock_id' => $batch->id,
+                'movement_type' => 'ADJUSTMENT',
+                'direction' => 'IN',
+                'quantity' => $quantity,
+                'stock_before' => 0,
+                'stock_after' => $quantity,
+                'source_type' => 'batch_of_stock',
+                'source_id' => $batch->id,
+                'created_by' => Auth::user()?->getKey(),
+            ]);
+        });
+
         static::deleted(function (BatchOfStock $batch) {
             self::notifyIfLow($batch->product_id);
         });
@@ -60,7 +88,7 @@ class BatchOfStock extends Model
         $productCode = preg_replace('/[^A-Z0-9]/', '', $productCode);
 
         $today = now()->format('Ymd');
-        $base = "B{$productCode}{$today}";
+        $base = "B-{$productCode}-{$today}-";
         $pattern = "{$base}%";
 
         $latest = self::lockForUpdate()
@@ -97,13 +125,13 @@ class BatchOfStock extends Model
     /**
      * Deduct stock using FEFO (first expiring, first out) across batches.
      */
-    public static function deductFefo(int $productId, int $quantity): void
+    public static function deductFefo(int $productId, int $quantity, array $context = []): void
     {
         if ($quantity <= 0) {
             return;
         }
 
-        DB::transaction(function () use ($productId, $quantity) {
+        DB::transaction(function () use ($productId, $quantity, $context) {
             $remaining = $quantity;
 
             $batches = self::where('product_id', $productId)
@@ -123,7 +151,23 @@ class BatchOfStock extends Model
                 }
 
                 $deduct = min($batch->quantity, $remaining);
+                $stockBefore = (int) $batch->quantity;
                 $batch->decrement('quantity', $deduct);
+                $stockAfter = $stockBefore - $deduct;
+
+                StockMovement::create([
+                    'product_id' => $batch->product_id,
+                    'batch_of_stock_id' => $batch->id,
+                    'movement_type' => 'SALE',
+                    'direction' => 'OUT',
+                    'quantity' => (int) $deduct,
+                    'stock_before' => $stockBefore,
+                    'stock_after' => $stockAfter,
+                    'source_type' => $context['source_type'] ?? null,
+                    'source_id' => $context['source_id'] ?? null,
+                    'created_by' => $context['created_by'] ?? null,
+                    'notes' => $context['notes'] ?? null,
+                ]);
                 $remaining -= $deduct;
             }
 

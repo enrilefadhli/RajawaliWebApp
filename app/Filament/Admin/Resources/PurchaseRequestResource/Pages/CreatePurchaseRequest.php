@@ -5,10 +5,10 @@ namespace App\Filament\Admin\Resources\PurchaseRequestResource\Pages;
 use App\Filament\Admin\Resources\PurchaseRequestResource;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Admin\Pages\BaseCreateRecord;
 use App\Filament\Admin\Concerns\RedirectsToIndex;
 
-class CreatePurchaseRequest extends CreateRecord
+class CreatePurchaseRequest extends BaseCreateRecord
 {
     use RedirectsToIndex;
     protected static string $resource = PurchaseRequestResource::class;

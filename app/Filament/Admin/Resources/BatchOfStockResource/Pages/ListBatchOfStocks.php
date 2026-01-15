@@ -27,6 +27,7 @@ class ListBatchOfStocks extends ListRecords
             Actions\Action::make('download_template')
                 ->label('Download Import Template')
                 ->icon('heroicon-o-document-arrow-down')
+                ->visible(false)
                 ->action(function () {
                     $headings = [
                         'product_code',
@@ -61,6 +62,7 @@ class ListBatchOfStocks extends ListRecords
             Actions\Action::make('import_batches')
                 ->label('Import Batch of Stocks')
                 ->icon('heroicon-o-arrow-down-tray')
+                ->visible(false)
                 ->form([
                     Forms\Components\FileUpload::make('file')
                         ->label('CSV / XLSX')

@@ -13,7 +13,7 @@ class SupplierSeeder extends Seeder
             [
                 'supplier_code' => 'UNVR',
                 'supplier_name' => 'UNILEVER INDONESIA',
-                'supplier_phone' => '021-804-70000',
+                'supplier_phone' => '02180470000',
                 'supplier_address' => 'contact@unilever.co.id',
             ],
             [

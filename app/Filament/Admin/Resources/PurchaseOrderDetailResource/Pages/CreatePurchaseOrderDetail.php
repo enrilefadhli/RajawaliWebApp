@@ -3,10 +3,10 @@
 namespace App\Filament\Admin\Resources\PurchaseOrderDetailResource\Pages;
 
 use App\Filament\Admin\Resources\PurchaseOrderDetailResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Admin\Pages\BaseCreateRecord;
 use App\Filament\Admin\Concerns\RedirectsToIndex;
 
-class CreatePurchaseOrderDetail extends CreateRecord
+class CreatePurchaseOrderDetail extends BaseCreateRecord
 {
     use RedirectsToIndex;
     protected static string $resource = PurchaseOrderDetailResource::class;

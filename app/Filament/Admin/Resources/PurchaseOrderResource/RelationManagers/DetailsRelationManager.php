@@ -18,7 +18,8 @@ class DetailsRelationManager extends RelationManager
         return $form->schema([
             Forms\Components\Select::make('product_id')
                 ->relationship('product', 'product_name', fn ($query) => $query->whereIn('status', ['ACTIVE', 'STORED']))
-                ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
+                ->getOptionLabelFromRecordUsing(fn ($record) => trim("{$record->product_name} {$record->product_code}" . ($record->variant ? " ({$record->variant})" : '')))
+                ->searchable(['product_name', 'product_code'])
                 ->reactive()
                 ->afterStateUpdated(function ($state, callable $set) {
                     $product = Product::find($state);
@@ -28,7 +29,6 @@ class DetailsRelationManager extends RelationManager
                 })
                 ->disabled()
                 ->required()
-                ->searchable()
                 ->preload()
                 ->label('Product'),
             Forms\Components\TextInput::make('quantity')
@@ -45,13 +45,19 @@ class DetailsRelationManager extends RelationManager
                 ->disabled()
                 ->numeric()
                 ->minValue(0)
-                ->step(0.01),
+                ->step(0.01)
+                ->stripCharacters(',')
+                ->mask(\Filament\Support\RawJs::make('$money($input)'))
+                ->dehydrateStateUsing(fn ($state) => $state === null ? null : str_replace(',', '', (string) $state)),
             Forms\Components\TextInput::make('unit_price')
                 ->label('Unit Price')
                 ->numeric()
                 ->minValue(0)
                 ->step(0.01)
                 ->reactive()
+                ->stripCharacters(',')
+                ->mask(\Filament\Support\RawJs::make('$money($input)'))
+                ->dehydrateStateUsing(fn ($state) => $state === null ? null : str_replace(',', '', (string) $state))
                 ->afterStateUpdated(function ($state, callable $set) {
                     $set('unit_price', $state);
                 })
@@ -89,6 +95,9 @@ class DetailsRelationManager extends RelationManager
                             ->numeric()
                             ->minValue(0)
                             ->step(0.01)
+                            ->stripCharacters(',')
+                            ->mask(\Filament\Support\RawJs::make('$money($input)'))
+                            ->dehydrateStateUsing(fn ($state) => $state === null ? null : str_replace(',', '', (string) $state))
                             ->required(),
                     ]),
             ])

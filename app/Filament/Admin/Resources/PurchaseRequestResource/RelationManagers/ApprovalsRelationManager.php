@@ -15,12 +15,12 @@ class ApprovalsRelationManager extends RelationManager
 
     public static function canViewForRecord($ownerRecord, $page): bool
     {
-        return auth()->user()?->canApprovePurchaseOrders() ?? false;
+        return auth()->user()?->canApprovePurchaseRequests() ?? false;
     }
 
     public static function canViewAnyForRecord($ownerRecord, $page): bool
     {
-        return auth()->user()?->canApprovePurchaseOrders() ?? false;
+        return auth()->user()?->canApprovePurchaseRequests() ?? false;
     }
 
     public function form(Form $form): Form

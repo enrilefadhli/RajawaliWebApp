@@ -3,14 +3,17 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\SaleResource\Pages;
+use App\Filament\Admin\Resources\SaleResource\RelationManagers\DetailsRelationManager;
 use App\Models\Sale;
 use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 
 class SaleResource extends Resource
@@ -71,9 +74,49 @@ class SaleResource extends Resource
                                                 });
                                         });
                                 })
+                                ->getSearchResultsUsing(function (string $search): array {
+                                    return Product::query()
+                                        ->where('status', 'ACTIVE')
+                                        ->whereHas('batchOfStocks', function ($batchQuery) {
+                                            $batchQuery
+                                                ->where('quantity', '>', 0)
+                                                ->where(function ($q) {
+                                                    $q->whereNull('expiry_date')->orWhereDate('expiry_date', '>=', now()->toDateString());
+                                                });
+                                        })
+                                        ->where(function ($query) use ($search) {
+                                            $query
+                                                ->where('product_name', 'like', "%{$search}%")
+                                                ->orWhere('product_code', 'like', "%{$search}%");
+                                        })
+                                        ->limit(50)
+                                        ->get()
+                                        ->mapWithKeys(function (Product $record) {
+                                            $variant = $record->variant ? " ({$record->variant})" : '';
+                                            $code = $record->product_code ? " ({$record->product_code})" : '';
+                                            $label = trim("{$record->product_name}{$code}{$variant}") . " - Stok tersedia: {$record->available_stock}";
+                                            return [$record->getKey() => $label];
+                                        })
+                                        ->toArray();
+                                })
+                                ->getOptionLabelUsing(function ($value): ?string {
+                                    if (! $value) {
+                                        return null;
+                                    }
+
+                                    $record = Product::find($value);
+                                    if (! $record) {
+                                        return null;
+                                    }
+
+                                    $variant = $record->variant ? " ({$record->variant})" : '';
+                                    $code = $record->product_code ? " ({$record->product_code})" : '';
+                                    return trim("{$record->product_name}{$code}{$variant}") . " - Stok tersedia: {$record->available_stock}";
+                                })
                                 ->getOptionLabelFromRecordUsing(function (Product $record) {
                                     $variant = $record->variant ? " ({$record->variant})" : '';
-                                    return trim("{$record->product_name}{$variant}") . " — Stok tersedia: {$record->available_stock}";
+                                    $code = $record->product_code ? " ({$record->product_code})" : '';
+                                    return trim("{$record->product_name}{$code}{$variant}") . " - Stok tersedia: {$record->available_stock}";
                                 })
                                 ->searchable()
                                 ->preload()
@@ -112,12 +155,15 @@ class SaleResource extends Resource
                                 ->numeric()
                                 ->required()
                                 ->prefix('Rp')
+                                ->stripCharacters(',')
+                                ->mask(\Filament\Support\RawJs::make('$money($input)'))
+                                ->dehydrateStateUsing(fn ($state) => $state === null ? null : str_replace(',', '', (string) $state))
                                 ->reactive(),
                             Forms\Components\Placeholder::make('line_total')
                                 ->label('Line Total')
                                 ->content(function (Get $get) {
                                     $quantity = (int) ($get('quantity') ?? 0);
-                                    $price = (float) ($get('price') ?? 0);
+                                    $price = (float) str_replace(',', '', (string) ($get('price') ?? 0));
                                     $lineTotal = $quantity * $price;
                                     return 'Rp ' . number_format($lineTotal, 0, ',', '.');
                                 })
@@ -134,7 +180,8 @@ class SaleResource extends Resource
                             $details = collect($get('details') ?? []);
 
                             $total = $details->sum(function ($item) {
-                                return (float) ($item['price'] ?? 0) * (int) ($item['quantity'] ?? 0);
+                                $price = (float) str_replace(',', '', (string) ($item['price'] ?? 0));
+                                return $price * (int) ($item['quantity'] ?? 0);
                             });
 
                             return 'Rp ' . number_format($total, 0, ',', '.');
@@ -150,18 +197,18 @@ class SaleResource extends Resource
         return $table
             ->defaultSort('sale_date', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                Tables\Columns\TextColumn::make('code')
                     ->label('Code')
-                    ->formatStateUsing(fn ($state) => 'S-' . str_pad((string) $state, 5, '0', STR_PAD_LEFT))
                     ->sortable()
-                    ->searchable(
-                        query: function ($query, $search) {
-                            $numeric = (int) preg_replace('/\D/', '', (string) $search);
-                            return $query->where('id', $numeric);
-                        },
-                    ),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('user.name')->label('Handled By')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('total_amount')->money('idr', true),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->colors([
+                        'success' => 'COMPLETED',
+                        'danger' => 'VOIDED',
+                    ])
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('sale_date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
@@ -179,11 +226,30 @@ class SaleResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn (Sale $record) => $record->status !== 'VOIDED'),
+                Action::make('void')
+                    ->label('Void')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Textarea::make('void_reason')
+                            ->label('Void Reason')
+                            ->required()
+                            ->rows(3),
+                    ])
+                    ->visible(fn (Sale $record) => $record->status !== 'VOIDED' && auth()->user()?->hasRole('ADMIN'))
+                    ->action(function (array $data, Sale $record) {
+                        $record->voidSale(auth()->user()?->getKey(), $data['void_reason'] ?? null);
+
+                        Notification::make()
+                            ->title('Sale voided')
+                            ->success()
+                            ->send();
+                    }),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getPages(): array
@@ -194,5 +260,47 @@ class SaleResource extends Resource
             'view' => Pages\ViewSale::route('/{record}'),
             'edit' => Pages\EditSale::route('/{record}/edit'),
         ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            DetailsRelationManager::class,
+        ];
+    }
+
+    public static function canEdit($record): bool
+    {
+        return self::canViewAny() && $record?->status !== 'VOIDED';
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canAccessSales() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canView($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return self::canViewAny();
     }
 }

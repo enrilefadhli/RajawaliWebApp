@@ -8,4 +8,9 @@ use Filament\Resources\Pages\ViewRecord;
 class ViewPurchaseRequest extends ViewRecord
 {
     protected static string $resource = PurchaseRequestResource::class;
+
+    public function getRelationManagers(): array
+    {
+        return [];
+    }
 }

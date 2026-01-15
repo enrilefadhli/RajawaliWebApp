@@ -97,11 +97,8 @@ class StockAdjustmentResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getPages(): array
@@ -109,8 +106,42 @@ class StockAdjustmentResource extends Resource
         return [
             'index' => Pages\ListStockAdjustments::route('/'),
             'create' => Pages\CreateStockAdjustment::route('/create'),
-            'edit' => Pages\EditStockAdjustment::route('/{record}/edit'),
             'view' => Pages\ViewStockAdjustment::route('/{record}'),
         ];
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canAccessStockSystem() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canView($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return self::canViewAny();
     }
 }

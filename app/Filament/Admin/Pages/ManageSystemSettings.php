@@ -30,6 +30,16 @@ class ManageSystemSettings extends Page implements HasForms
         $this->form->fill($settings?->toArray() ?? []);
     }
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->canManageSystemSettings() ?? false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->canManageSystemSettings() ?? false;
+    }
+
     public function form(Form $form): Form
     {
         return $form

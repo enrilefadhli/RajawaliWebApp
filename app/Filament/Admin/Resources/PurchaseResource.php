@@ -9,8 +9,10 @@ use App\Models\Product;
 use App\Models\PurchaseOrder;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
@@ -54,7 +56,14 @@ class PurchaseResource extends Resource
                 ->schema([
                     Forms\Components\Select::make('product_id')
                         ->label('Product')
-                        ->options(fn () => Product::whereIn('status', ['ACTIVE', 'STORED'])->pluck('product_name', 'id'))
+                        ->options(function () {
+                            return Product::whereIn('status', ['ACTIVE', 'STORED'])
+                                ->orderBy('product_name')
+                                ->get()
+                                ->mapWithKeys(fn ($product) => [
+                                    $product->id => trim("{$product->product_name} {$product->product_code}" . ($product->variant ? " ({$product->variant})" : '')),
+                                ]);
+                        })
                         ->searchable()
                         ->preload()
                         ->required()
@@ -74,7 +83,10 @@ class PurchaseResource extends Resource
                         ->numeric()
                         ->minValue(0)
                         ->required()
-                        ->prefix('Rp'),
+                        ->prefix('Rp')
+                        ->stripCharacters(',')
+                        ->mask(\Filament\Support\RawJs::make('$money($input)'))
+                        ->dehydrateStateUsing(fn ($state) => $state === null ? null : str_replace(',', '', (string) $state)),
                 ])
                 ->columns(3),
         ])->columns(2);
@@ -90,6 +102,12 @@ class PurchaseResource extends Resource
                 Tables\Columns\TextColumn::make('supplier.supplier_name')->label('Supplier')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('purchaseOrder.code')->label('PO'),
                 Tables\Columns\TextColumn::make('total_amount')->money('idr', true),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->colors([
+                        'success' => 'COMPLETED',
+                        'danger' => 'VOIDED',
+                    ])
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
             ->filters([
@@ -106,11 +124,30 @@ class PurchaseResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn (Purchase $record) => $record->status !== 'VOIDED'),
+                Action::make('void')
+                    ->label('Void')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\Textarea::make('void_reason')
+                            ->label('Void Reason')
+                            ->required()
+                            ->rows(3),
+                    ])
+                    ->visible(fn (Purchase $record) => $record->status !== 'VOIDED' && auth()->user()?->hasRole('ADMIN'))
+                    ->action(function (array $data, Purchase $record) {
+                        $record->voidPurchase(auth()->user()?->getKey(), $data['void_reason'] ?? null);
+
+                        Notification::make()
+                            ->title('Purchase voided')
+                            ->success()
+                            ->send();
+                    }),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->bulkActions([]);
     }
 
     public static function getPages(): array
@@ -130,15 +167,9 @@ class PurchaseResource extends Resource
         ];
     }
 
-    protected static function allowedRoles(): array
-    {
-        return ['ADMIN', 'MANAGER'];
-    }
-
     public static function canCreate(): bool
     {
-        $user = auth()->user();
-        return $user && collect(self::allowedRoles())->some(fn ($role) => $user->hasRole($role));
+        return auth()->user()?->canAccessPurchasing() ?? false;
     }
 
     public static function canViewAny(): bool
@@ -148,7 +179,7 @@ class PurchaseResource extends Resource
 
     public static function canEdit($record): bool
     {
-        return self::canCreate();
+        return self::canCreate() && $record?->status !== 'VOIDED';
     }
 
     public static function canView($record): bool
@@ -158,7 +189,12 @@ class PurchaseResource extends Resource
 
     public static function canDelete($record): bool
     {
-        return self::canCreate();
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
     }
 
     public static function shouldRegisterNavigation(): bool

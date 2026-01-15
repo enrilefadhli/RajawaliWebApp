@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers\DetailsRelationManager;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
+use App\Services\PurchaseService;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Components\FileUpload;
@@ -14,6 +15,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class PurchaseOrderResource extends Resource
@@ -24,7 +27,15 @@ class PurchaseOrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
 
-    protected static ?int $navigationSort = 41;
+    protected static ?int $navigationSort = 42;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withCount([
+                'details as missing_expiry_count' => fn (Builder $query) => $query->whereNull('expiry_date'),
+            ]);
+    }
 
     public static function form(Form $form): Form
     {
@@ -60,7 +71,7 @@ class PurchaseOrderResource extends Resource
             Forms\Components\Hidden::make('status')
                 ->default('ONPROGRESS'),
             FileUpload::make('attachment_path')
-                ->label('Invoice / Receipt (PDF)')
+                ->label('Invoice / Receipt / Signed Purchase Order (PDF)')
                 ->acceptedFileTypes(['application/pdf'])
                 ->directory('purchase-orders')
                 ->disk('public')
@@ -76,6 +87,7 @@ class PurchaseOrderResource extends Resource
     {
         return $table
             ->defaultSort('created_at', 'desc')
+            ->recordAction('edit')
             ->columns([
                 Tables\Columns\TextColumn::make('code')->label('PO Code')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('purchaseRequest.code')->label('PR Code')->sortable()->searchable(),
@@ -86,7 +98,16 @@ class PurchaseOrderResource extends Resource
                         'success' => 'COMPLETED',
                         'danger' => 'CANCELLED',
                     ]),
-                Tables\Columns\TextColumn::make('total_amount')->money('idr', true),
+                Tables\Columns\TextColumn::make('purchaseRequest.total_expected_amount')
+                    ->label('Total Expected')
+                    ->money('idr', true),
+                Tables\Columns\TextColumn::make('total_amount')
+                    ->label('Total Actual')
+                    ->money('idr', true),
+                Tables\Columns\TextColumn::make('missing_expiry_count')
+                    ->label('Missing Expiry')
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('attachment_path')
                     ->label('Attachment')
                     ->url(fn ($record) => $record->attachment_path ? Storage::disk('public')->url($record->attachment_path) : null, true),
@@ -101,7 +122,6 @@ class PurchaseOrderResource extends Resource
                     ]),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
                 Action::make('download_po')
                     ->label('Download PO')
                     ->icon('heroicon-m-arrow-down-tray')
@@ -129,8 +149,8 @@ class PurchaseOrderResource extends Resource
                         Notification::make()
                             ->title('PO cancelled')
                             ->success()
-                            ->send();
-                    }),
+                    ->send();
+            }),
                 Tables\Actions\EditAction::make()
                     ->visible(fn ($record) => $record?->status !== 'COMPLETED' && $record?->status !== 'CANCELLED'),
             ])
@@ -158,7 +178,7 @@ class PurchaseOrderResource extends Resource
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->canApprovePurchaseOrders() ?? false;
+        return auth()->user()?->canAccessPurchasing() ?? false;
     }
 
     public static function canEdit($record): bool
@@ -166,12 +186,22 @@ class PurchaseOrderResource extends Resource
         if ($record?->status === 'COMPLETED' || $record?->status === 'CANCELLED') {
             return false;
         }
-        return auth()->user()?->canApprovePurchaseOrders() ?? false;
+        return auth()->user()?->canAccessPurchasing() ?? false;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->canApprovePurchaseOrders() ?? false;
+        return auth()->user()?->canAccessPurchasing() ?? false;
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canAccessPurchasing() ?? false;
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return self::canViewAny();
     }
 
     public static function downloadPurchaseOrderPdf(PurchaseOrder $purchaseOrder)

@@ -76,4 +76,34 @@ class SupplierResource extends Resource
             'edit' => Pages\EditSupplier::route('/{record}/edit'),
         ];
     }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canAccessMasterData() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canView($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return self::canViewAny();
+    }
 }

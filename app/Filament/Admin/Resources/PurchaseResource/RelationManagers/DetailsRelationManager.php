@@ -17,9 +17,9 @@ class DetailsRelationManager extends RelationManager
         return $form->schema([
             Forms\Components\Select::make('product_id')
                 ->relationship('product', 'product_name', fn ($query) => $query->where('status', 'ACTIVE'))
-                ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
+                ->getOptionLabelFromRecordUsing(fn ($record) => trim("{$record->product_name} {$record->product_code}" . ($record->variant ? " ({$record->variant})" : '')))
+                ->searchable(['product_name', 'product_code'])
                 ->required()
-                ->searchable()
                 ->preload()
                 ->label('Product'),
             Forms\Components\TextInput::make('quantity')
@@ -29,7 +29,10 @@ class DetailsRelationManager extends RelationManager
             Forms\Components\TextInput::make('price')
                 ->numeric()
                 ->minValue(0)
-                ->required(),
+                ->required()
+                ->stripCharacters(',')
+                ->mask(\Filament\Support\RawJs::make('$money($input)'))
+                ->dehydrateStateUsing(fn ($state) => $state === null ? null : str_replace(',', '', (string) $state)),
         ]);
     }
 
@@ -43,14 +46,18 @@ class DetailsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->since(),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->visible(fn () => $this->ownerRecord?->status !== 'VOIDED'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn () => $this->ownerRecord?->status !== 'VOIDED'),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn () => $this->ownerRecord?->status !== 'VOIDED'),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+                Tables\Actions\DeleteBulkAction::make()
+                    ->visible(fn () => $this->ownerRecord?->status !== 'VOIDED'),
             ]);
     }
 }

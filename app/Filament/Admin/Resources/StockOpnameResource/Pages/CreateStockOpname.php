@@ -5,12 +5,12 @@ namespace App\Filament\Admin\Resources\StockOpnameResource\Pages;
 use App\Filament\Admin\Resources\StockOpnameResource;
 use App\Models\StockAdjustment;
 use App\Models\StockAdjustmentItem;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Admin\Pages\BaseCreateRecord;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Filament\Admin\Concerns\RedirectsToIndex;
 
-class CreateStockOpname extends CreateRecord
+class CreateStockOpname extends BaseCreateRecord
 {
     use RedirectsToIndex;
     protected static string $resource = StockOpnameResource::class;
@@ -25,6 +25,7 @@ class CreateStockOpname extends CreateRecord
     protected function afterCreate(): void
     {
         $this->applyAdjustmentsFromOpname();
+        parent::afterCreate();
     }
 
     /**
@@ -54,7 +55,7 @@ class CreateStockOpname extends CreateRecord
                     'batch_of_stock_id' => $item->batch_of_stock_id,
                     'product_id' => $item->product_id,
                     'qty_change' => (int) $item->difference_qty,
-                    'notes' => $item->notes,
+                    'notes' => null,
                 ]);
             }
         });

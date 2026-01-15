@@ -18,6 +18,13 @@ class SaleDetailResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-list-bullet';
 
+    protected static bool $shouldRegisterNavigation = false;
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canAccessSales() ?? false;
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -27,10 +34,16 @@ class SaleDetailResource extends Resource
                 ->label('Sale'),
             Forms\Components\Select::make('product_id')
                 ->relationship('product', 'product_name', fn ($query) => $query->where('status', 'ACTIVE'))
-                ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
+                ->getOptionLabelFromRecordUsing(fn ($record) => trim("{$record->product_name} {$record->product_code}" . ($record->variant ? " ({$record->variant})" : '')))
+                ->searchable(['product_name', 'product_code'])
                 ->required(),
             Forms\Components\TextInput::make('quantity')->numeric()->required(),
-            Forms\Components\TextInput::make('price')->numeric()->required(),
+            Forms\Components\TextInput::make('price')
+                ->numeric()
+                ->required()
+                ->stripCharacters(',')
+                ->mask(\Filament\Support\RawJs::make('$money($input)'))
+                ->dehydrateStateUsing(fn ($state) => $state === null ? null : str_replace(',', '', (string) $state)),
         ])->columns(2);
     }
 

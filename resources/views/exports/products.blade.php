@@ -1,5 +1,19 @@
 <table>
     <tr>
+        <th colspan="10">Filters</th>
+    </tr>
+    <tr>
+        <td>Category</td>
+        <td colspan="9">{{ $filters['category'] ?? 'All' }}</td>
+    </tr>
+    <tr>
+        <td>Status</td>
+        <td colspan="9">{{ $filters['status'] ?? 'All' }}</td>
+    </tr>
+    <tr>
+        <td colspan="10"></td>
+    </tr>
+    <tr>
         <th>Product Code</th>
         <th>SKU</th>
         <th>Product Name</th>

@@ -5,10 +5,10 @@ namespace App\Filament\Admin\Resources\PurchaseResource\Pages;
 use App\Filament\Admin\Resources\PurchaseResource;
 use App\Services\PurchaseService;
 use Filament\Notifications\Notification;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Admin\Pages\BaseCreateRecord;
 use App\Filament\Admin\Concerns\RedirectsToIndex;
 
-class CreatePurchase extends CreateRecord
+class CreatePurchase extends BaseCreateRecord
 {
     use RedirectsToIndex;
     protected static string $resource = PurchaseResource::class;

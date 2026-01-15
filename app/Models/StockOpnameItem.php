@@ -17,7 +17,6 @@ class StockOpnameItem extends Model
         'system_qty',
         'actual_qty',
         'difference_qty',
-        'notes',
     ];
 
     protected static function booted(): void

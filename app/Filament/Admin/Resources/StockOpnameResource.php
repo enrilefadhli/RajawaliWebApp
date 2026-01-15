@@ -67,7 +67,6 @@ class StockOpnameResource extends Resource
                         ->numeric()
                         ->disabled()
                         ->dehydrated(true),
-                    Forms\Components\Textarea::make('notes')->columnSpanFull(),
                 ])
                 ->minItems(1)
                 ->columns(2)
@@ -111,5 +110,35 @@ class StockOpnameResource extends Resource
             'view' => Pages\ViewStockOpname::route('/{record}'),
             'edit' => Pages\EditStockOpname::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canAccessStockSystem() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canView($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return self::canViewAny();
     }
 }

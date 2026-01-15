@@ -15,11 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(RoleSeeder::class);
+        $this->call([
+            RoleSeeder::class,
+        ]);
 
-        $adminRole = Role::firstOrCreate(['name' => 'ADMIN']);
-        $managerRole = Role::firstOrCreate(['name' => 'MANAGER']);
-        $purchasingRole = Role::firstOrCreate(['name' => 'PURCHASING']);
+        $adminRole = Role::where('name', 'ADMIN')->first();
+        $managerRole = Role::where('name', 'MANAGER')->first();
+        $purchasingRole = Role::where('name', 'PURCHASING')->first();
+        $warehouseRole = Role::where('name', 'WAREHOUSE')->first();
+        $cashierRole = Role::where('name', 'CASHIER')->first();
 
         $admin = User::factory()->create([
             'username' => 'abdulazis',
@@ -54,6 +58,71 @@ class DatabaseSeeder extends Seeder
         ]);
         $manager->roles()->sync([$managerRole->id]);
 
+        $aldi = User::updateOrCreate(
+            ['username' => 'aldi'],
+            [
+                'email' => 'aldi@rajawali.com',
+                'password' => Hash::make('password'),
+                'name' => 'Aldi',
+                'phone' => '1234567890',
+                'address' => 'Cilincing',
+                'role' => 'MANAGER',
+            ]
+        );
+        $aldi->roles()->syncWithoutDetaching([$managerRole->id]);
+
+        $badrudin = User::updateOrCreate(
+            ['username' => 'badrudin'],
+            [
+                'email' => 'badrudin@rajawali.com',
+                'password' => Hash::make('password'),
+                'name' => 'Badrudin',
+                'phone' => '1234567890',
+                'address' => 'Cilincing',
+                'role' => 'PURCHASING',
+            ]
+        );
+        $badrudin->roles()->syncWithoutDetaching([$purchasingRole->id]);
+
+        $fauzan = User::updateOrCreate(
+            ['username' => 'fauzan'],
+            [
+                'email' => 'fauzan@rajawali.com',
+                'password' => Hash::make('password'),
+                'name' => 'Fauzan',
+                'phone' => '1234567890',
+                'address' => 'Cilincing',
+                'role' => 'WAREHOUSE',
+            ]
+        );
+        $fauzan->roles()->syncWithoutDetaching([$warehouseRole->id]);
+
+        $roby = User::updateOrCreate(
+            ['username' => 'roby'],
+            [
+                'email' => 'roby@rajawali.com',
+                'password' => Hash::make('password'),
+                'name' => 'Roby',
+                'phone' => '1234567890',
+                'address' => 'Cilincing',
+                'role' => 'WAREHOUSE',
+            ]
+        );
+        $roby->roles()->syncWithoutDetaching([$warehouseRole->id]);
+
+        $sukisna = User::updateOrCreate(
+            ['username' => 'sukisna'],
+            [
+                'email' => 'sukisna@rajawali.com',
+                'password' => Hash::make('password'),
+                'name' => 'Sukisna',
+                'phone' => '1234567890',
+                'address' => 'Cilincing',
+                'role' => 'CASHIER',
+            ]
+        );
+        $sukisna->roles()->syncWithoutDetaching([$cashierRole->id]);
+
         $enrile = User::updateOrCreate(
             ['username' => 'enrilefadhli'],
             [
@@ -70,8 +139,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CategorySeeder::class,
             SupplierSeeder::class,
-            ProductSeeder::class,
-            RajawaliFlowSeeder::class,
         ]);
     }
 }

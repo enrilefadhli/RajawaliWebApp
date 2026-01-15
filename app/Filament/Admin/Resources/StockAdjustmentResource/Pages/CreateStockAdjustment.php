@@ -3,11 +3,11 @@
 namespace App\Filament\Admin\Resources\StockAdjustmentResource\Pages;
 
 use App\Filament\Admin\Resources\StockAdjustmentResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Admin\Pages\BaseCreateRecord;
 use Illuminate\Support\Facades\Auth;
 use App\Filament\Admin\Concerns\RedirectsToIndex;
 
-class CreateStockAdjustment extends CreateRecord
+class CreateStockAdjustment extends BaseCreateRecord
 {
     use RedirectsToIndex;
     protected static string $resource = StockAdjustmentResource::class;

@@ -7,6 +7,7 @@ use App\Models\Purchase;
 use App\Models\PurchaseDetail;
 use App\Models\PurchaseOrder;
 use App\Models\Product;
+use App\Models\StockMovement;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -73,11 +74,26 @@ class PurchaseService
                 }
 
                 // Increase stock by creating a batch entry.
-                BatchOfStock::create([
+                $batch = new BatchOfStock([
                     'product_id' => $purchaseDetail->product_id,
                     'quantity' => (int) $purchaseDetail->quantity,
                     'expiry_date' => $detail->expiry_date,
                     'batch_no' => null, // auto-generated
+                ]);
+                $batch->skipMovementLog = true;
+                $batch->save();
+
+                StockMovement::create([
+                    'product_id' => $purchaseDetail->product_id,
+                    'batch_of_stock_id' => $batch->id,
+                    'movement_type' => 'PURCHASE',
+                    'direction' => 'IN',
+                    'quantity' => (int) $purchaseDetail->quantity,
+                    'stock_before' => 0,
+                    'stock_after' => (int) $purchaseDetail->quantity,
+                    'source_type' => 'purchase_detail',
+                    'source_id' => $purchaseDetail->id,
+                    'created_by' => $userId,
                 ]);
             }
 
@@ -136,11 +152,26 @@ class PurchaseService
                     'price' => $price,
                 ]);
 
-                BatchOfStock::create([
+                $batch = new BatchOfStock([
                     'product_id' => $purchaseDetail->product_id,
                     'quantity' => $purchaseDetail->quantity,
                     'expiry_date' => $expiryDate,
                     'batch_no' => null,
+                ]);
+                $batch->skipMovementLog = true;
+                $batch->save();
+
+                StockMovement::create([
+                    'product_id' => $purchaseDetail->product_id,
+                    'batch_of_stock_id' => $batch->id,
+                    'movement_type' => 'PURCHASE',
+                    'direction' => 'IN',
+                    'quantity' => (int) $purchaseDetail->quantity,
+                    'stock_before' => 0,
+                    'stock_after' => (int) $purchaseDetail->quantity,
+                    'source_type' => 'purchase_detail',
+                    'source_id' => $purchaseDetail->id,
+                    'created_by' => $userId,
                 ]);
             }
 

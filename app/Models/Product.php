@@ -103,6 +103,27 @@ class Product extends Model
         return $final < 0 ? 0 : $final;
     }
 
+    public function computedDiscountAmount(): float
+    {
+        $price = (float) ($this->selling_price ?? 0);
+        if ($price <= 0) {
+            return 0.0;
+        }
+
+        $amount = $this->discount_amount === null ? 0.0 : (float) $this->discount_amount;
+        if ($amount > 0) {
+            return min($amount, $price);
+        }
+
+        $percent = $this->discount_percent === null ? 0.0 : (float) $this->discount_percent;
+        if ($percent > 0) {
+            $percent = max(0, min(100, $percent));
+            return round($price * ($percent / 100), 2);
+        }
+
+        return 0.0;
+    }
+
     protected function availableStock(): Attribute
     {
         return Attribute::get(function () {

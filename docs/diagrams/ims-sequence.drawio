@@ -1,0 +1,199 @@
+<mxfile host="app.diagrams.net" modified="2026-01-07T00:00:00.000Z" agent="Codex" version="20.8.20">
+  <diagram name="IMS Sequence">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="2100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="u1" value="User (Staff/Admin)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="u1l" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeDasharray=4 4;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="105" y="80" width="10" height="1960" as="geometry" />
+        </mxCell>
+
+        <mxCell id="u2" value="Filament UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="220" y="40" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="u2l" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeDasharray=4 4;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="285" y="80" width="10" height="1960" as="geometry" />
+        </mxCell>
+
+        <mxCell id="u3" value="Service Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="420" y="40" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="u3l" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeDasharray=4 4;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="495" y="80" width="10" height="1960" as="geometry" />
+        </mxCell>
+
+        <mxCell id="u4" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="640" y="40" width="140" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="u4l" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeDasharray=4 4;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="705" y="80" width="10" height="1960" as="geometry" />
+        </mxCell>
+
+        <mxCell id="u5" value="Stock Movements" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="820" y="40" width="170" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="u5l" value="" style="rounded=0;whiteSpace=wrap;html=1;strokeDasharray=4 4;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="895" y="80" width="10" height="1960" as="geometry" />
+        </mxCell>
+
+        <mxCell id="h1" value="Login" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#d0d0d0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="110" width="950" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="h2" value="Purchase Request → PO → Purchase" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#d0d0d0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="950" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="h3" value="Sales" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#d0d0d0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="760" width="950" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="h4" value="Stock Opname" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#d0d0d0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1040" width="950" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="h5" value="Manual Stock Adjustment" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#d0d0d0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1380" width="950" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="h6" value="Add Batch + View Movements" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#d0d0d0;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1660" width="950" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="Submit credentials" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="160" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e2" value="Auth service: validate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="190" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e3" value="Fetch user" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="220" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e4" value="User record" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="u4" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="250" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e5" value="Auth success" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="u3" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="280" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e6" value="Show dashboard" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="u2" target="u1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="105" y="310" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e7" value="Create PR + items" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="410" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e8" value="PR service: save PR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="440" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e9" value="Insert PR + details" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="470" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e10" value="Approve/Reject PR" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="500" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e11" value="PR service: approve" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="530" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e12" value="Update PR status" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="560" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e13" value="Create PO (1:1)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="590" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e14" value="Complete PO / receive" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="620" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e15" value="Purchase service: create purchase" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="650" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e16" value="Insert purchase + details" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="680" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e17" value="Log IN movement (purchase)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u5">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="895" y="710" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e18" value="Create sale" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="810" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e19" value="Sale service: save sale" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="840" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e20" value="Insert sale + details" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="870" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e21" value="Deduct FEFO batches" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="900" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e22" value="Log OUT movement (sale)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u5">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="895" y="930" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e23" value="Start opname" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="1090" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e24" value="Opname service: save session" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="1120" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e25" value="Insert opname + items" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="1150" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e26" value="Create stock_adjustments" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="1180" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e27" value="Update stocks to physical" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="1210" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e28" value="Log IN/OUT movement (opname)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u5">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="895" y="1240" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e29" value="Create manual adjustment" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="1430" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e30" value="Adjustment service: save" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="1460" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e31" value="Insert stock_adjustments" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="1490" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e32" value="Update stocks/batches" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="1520" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e33" value="Log IN/OUT movement (adjustment)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u5">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="895" y="1550" as="targetPoint" /></mxGeometry>
+        </mxCell>
+
+        <mxCell id="e34" value="Add batch of stock" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="1690" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e35" value="Batch service: save batch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="1720" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e36" value="Insert batch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u4">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="705" y="1750" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e37" value="Log IN movement (batch)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u5">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="895" y="1780" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e38" value="Open stock movements" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u1" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="1810" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e39" value="Query movements" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u2" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="1840" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e40" value="Fetch movement rows" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="u3" target="u5">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="895" y="1870" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e41" value="Movement list" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="u5" target="u3">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="495" y="1900" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e42" value="Render list" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="u3" target="u2">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="285" y="1930" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="e43" value="Display results" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" parent="1" source="u2" target="u1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="105" y="1960" as="targetPoint" /></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

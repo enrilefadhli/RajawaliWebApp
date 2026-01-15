@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Models\StockMovement;
 
 class StockAdjustmentItem extends Model
 {
@@ -26,7 +27,8 @@ class StockAdjustmentItem extends Model
             DB::transaction(function () use ($item) {
                 $batch = BatchOfStock::lockForUpdate()->findOrFail($item->batch_of_stock_id);
 
-                $newQty = $batch->quantity + $item->qty_change;
+                $stockBefore = (int) $batch->quantity;
+                $newQty = $stockBefore + (int) $item->qty_change;
                 if ($newQty < 0) {
                     throw ValidationException::withMessages([
                         'qty_change' => 'Resulting quantity would be negative for this batch.',
@@ -36,6 +38,25 @@ class StockAdjustmentItem extends Model
                 $item->product_id = $batch->product_id;
 
                 $batch->update(['quantity' => $newQty]);
+
+                if ((int) $item->qty_change !== 0) {
+                    $movementType = self::resolveMovementType($item->stock_adjustment_id);
+                    $direction = ((int) $item->qty_change) >= 0 ? 'IN' : 'OUT';
+
+                    StockMovement::create([
+                        'product_id' => $batch->product_id,
+                        'batch_of_stock_id' => $batch->id,
+                        'movement_type' => $movementType,
+                        'direction' => $direction,
+                        'quantity' => abs((int) $item->qty_change),
+                        'stock_before' => $stockBefore,
+                        'stock_after' => $newQty,
+                        'source_type' => 'stock_adjustment',
+                        'source_id' => $item->stock_adjustment_id,
+                        'created_by' => self::resolveCreatorId($item->stock_adjustment_id),
+                        'notes' => $item->notes,
+                    ]);
+                }
             });
         });
 
@@ -50,7 +71,8 @@ class StockAdjustmentItem extends Model
                 $batch = BatchOfStock::lockForUpdate()->findOrFail($item->batch_of_stock_id);
                 $originalChange = (int) $item->getOriginal('qty_change');
                 $delta = (int) $item->qty_change - $originalChange;
-                $newQty = $batch->quantity + $delta;
+                $stockBefore = (int) $batch->quantity;
+                $newQty = $stockBefore + $delta;
 
                 if ($newQty < 0) {
                     throw ValidationException::withMessages([
@@ -61,13 +83,34 @@ class StockAdjustmentItem extends Model
                 $item->product_id = $batch->product_id;
 
                 $batch->update(['quantity' => $newQty]);
+
+                if ($delta !== 0) {
+                    $movementType = self::resolveMovementType($item->stock_adjustment_id);
+                    $direction = $delta >= 0 ? 'IN' : 'OUT';
+
+                    StockMovement::create([
+                        'product_id' => $batch->product_id,
+                        'batch_of_stock_id' => $batch->id,
+                        'movement_type' => $movementType,
+                        'direction' => $direction,
+                        'quantity' => abs($delta),
+                        'stock_before' => $stockBefore,
+                        'stock_after' => $newQty,
+                        'source_type' => 'stock_adjustment',
+                        'source_id' => $item->stock_adjustment_id,
+                        'created_by' => self::resolveCreatorId($item->stock_adjustment_id),
+                        'notes' => $item->notes,
+                    ]);
+                }
             });
         });
 
         static::deleting(function (StockAdjustmentItem $item) {
             DB::transaction(function () use ($item) {
                 $batch = BatchOfStock::lockForUpdate()->findOrFail($item->batch_of_stock_id);
-                $newQty = $batch->quantity - $item->qty_change;
+                $stockBefore = (int) $batch->quantity;
+                $delta = 0 - (int) $item->qty_change;
+                $newQty = $stockBefore + $delta;
 
                 if ($newQty < 0) {
                     throw ValidationException::withMessages([
@@ -76,8 +119,47 @@ class StockAdjustmentItem extends Model
                 }
 
                 $batch->update(['quantity' => $newQty]);
+
+                if ($delta !== 0) {
+                    $movementType = self::resolveMovementType($item->stock_adjustment_id);
+                    $direction = $delta >= 0 ? 'IN' : 'OUT';
+
+                    StockMovement::create([
+                        'product_id' => $batch->product_id,
+                        'batch_of_stock_id' => $batch->id,
+                        'movement_type' => $movementType,
+                        'direction' => $direction,
+                        'quantity' => abs($delta),
+                        'stock_before' => $stockBefore,
+                        'stock_after' => $newQty,
+                        'source_type' => 'stock_adjustment',
+                        'source_id' => $item->stock_adjustment_id,
+                        'created_by' => self::resolveCreatorId($item->stock_adjustment_id),
+                        'notes' => $item->notes,
+                    ]);
+                }
             });
         });
+    }
+
+    private static function resolveMovementType(?int $stockAdjustmentId): string
+    {
+        if (! $stockAdjustmentId) {
+            return 'ADJUSTMENT';
+        }
+
+        $reason = StockAdjustment::whereKey($stockAdjustmentId)->value('reason');
+
+        return $reason === 'OPNAME' ? 'OPNAME' : 'ADJUSTMENT';
+    }
+
+    private static function resolveCreatorId(?int $stockAdjustmentId): ?int
+    {
+        if (! $stockAdjustmentId) {
+            return null;
+        }
+
+        return StockAdjustment::whereKey($stockAdjustmentId)->value('created_by');
     }
 
     public function stockAdjustment(): BelongsTo

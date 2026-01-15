@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\ValidationException;
 use App\Models\BatchOfStock;
+use Illuminate\Support\Facades\Auth;
 
 class SaleDetail extends Model
 {
@@ -28,7 +29,16 @@ class SaleDetail extends Model
                 ]);
             }
 
-            BatchOfStock::deductFefo($detail->product_id, (int) $detail->quantity);
+            $createdBy = $detail->sale?->user_id;
+            if (! $createdBy && $detail->sale_id) {
+                $createdBy = $detail->sale()->value('user_id');
+            }
+
+            BatchOfStock::deductFefo($detail->product_id, (int) $detail->quantity, [
+                'source_type' => 'sale',
+                'source_id' => $detail->sale_id,
+                'created_by' => $createdBy ?? Auth::user()?->getKey(),
+            ]);
         });
 
         static::created(function (SaleDetail $detail) {

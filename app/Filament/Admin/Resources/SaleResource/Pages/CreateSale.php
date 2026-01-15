@@ -3,11 +3,11 @@
 namespace App\Filament\Admin\Resources\SaleResource\Pages;
 
 use App\Filament\Admin\Resources\SaleResource;
-use Filament\Resources\Pages\CreateRecord;
+use App\Filament\Admin\Pages\BaseCreateRecord;
 use Illuminate\Support\Arr;
 use App\Filament\Admin\Concerns\RedirectsToIndex;
 
-class CreateSale extends CreateRecord
+class CreateSale extends BaseCreateRecord
 {
     use RedirectsToIndex;
     protected static string $resource = SaleResource::class;

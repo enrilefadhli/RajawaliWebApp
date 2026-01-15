@@ -16,6 +16,31 @@ class PurchaseOrderDetailResource extends Resource
 
     protected static bool $shouldRegisterNavigation = false;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canAccessPurchasing() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canView($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return self::canViewAny();
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -25,7 +50,8 @@ class PurchaseOrderDetailResource extends Resource
                 ->label('Purchase Order'),
             Forms\Components\Select::make('product_id')
                 ->relationship('product', 'product_name', fn ($query) => $query->where('status', 'ACTIVE'))
-                ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
+                ->getOptionLabelFromRecordUsing(fn ($record) => trim("{$record->product_name} {$record->product_code}" . ($record->variant ? " ({$record->variant})" : '')))
+                ->searchable(['product_name', 'product_code'])
                 ->required(),
             Forms\Components\TextInput::make('quantity')->numeric()->required(),
         ])->columns(2);

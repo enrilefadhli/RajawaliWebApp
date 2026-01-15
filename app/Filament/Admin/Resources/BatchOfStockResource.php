@@ -28,10 +28,19 @@ class BatchOfStockResource extends Resource
                 ->relationship('product.category', 'category_name')
                 ->searchable()
                 ->preload()
+                ->default(function () {
+                    $productId = request()->get('product_id');
+                    if (! $productId) {
+                        return null;
+                    }
+
+                    return Product::find($productId)?->category_id;
+                })
                 ->dehydrated(false)
                 ->reactive(),
             Forms\Components\Select::make('product_id')
                 ->label('Product')
+                ->default(fn () => request()->get('product_id'))
                 ->options(function (callable $get) {
                     return Product::query()
                         ->when($get('category_filter'), fn ($q, $catId) => $q->where('category_id', $catId))
@@ -39,8 +48,20 @@ class BatchOfStockResource extends Resource
                         ->orderBy('product_name')
                         ->get()
                         ->mapWithKeys(fn ($product) => [
-                            $product->id => trim($product->product_name . ($product->variant ? " ({$product->variant})" : '')),
+                            $product->id => trim("{$product->product_name} ({$product->product_code})" . ($product->variant ? " ({$product->variant})" : '')),
                         ]);
+                })
+                ->getOptionLabelUsing(function ($value): ?string {
+                    if (! $value) {
+                        return null;
+                    }
+
+                    $product = Product::find($value);
+                    if (! $product) {
+                        return (string) $value;
+                    }
+
+                    return trim("{$product->product_name} ({$product->product_code})" . ($product->variant ? " ({$product->variant})" : ''));
                 })
                 ->searchable()
                 ->preload()
@@ -55,6 +76,7 @@ class BatchOfStockResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('expiry_date', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('product.product_name')->label('Product')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('product.product_code')->label('Product Code')->sortable()->searchable(),
@@ -92,5 +114,35 @@ class BatchOfStockResource extends Resource
             'edit' => Pages\EditBatchOfStock::route('/{record}/edit'),
             'view' => Pages\ViewBatchOfStock::route('/{record}'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canAccessStockSystem() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canView($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return self::canViewAny();
     }
 }

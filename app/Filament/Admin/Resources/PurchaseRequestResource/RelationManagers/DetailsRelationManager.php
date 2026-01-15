@@ -17,9 +17,9 @@ class DetailsRelationManager extends RelationManager
         return $form->schema([
             Forms\Components\Select::make('product_id')
                 ->relationship('product', 'product_name', fn ($query) => $query->where('status', 'ACTIVE'))
-                ->getOptionLabelFromRecordUsing(fn ($record) => trim($record->product_name . ($record->variant ? " ({$record->variant})" : '')))
+                ->getOptionLabelFromRecordUsing(fn ($record) => trim("{$record->product_name} {$record->product_code}" . ($record->variant ? " ({$record->variant})" : '')))
+                ->searchable(['product_name', 'product_code'])
                 ->required()
-                ->searchable()
                 ->preload()
                 ->label('Product'),
             Forms\Components\TextInput::make('quantity')

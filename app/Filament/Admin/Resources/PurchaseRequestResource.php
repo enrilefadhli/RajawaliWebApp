@@ -115,6 +115,9 @@ class PurchaseRequestResource extends Resource
                                 ->minValue(0)
                                 ->step(0.01)
                                 ->reactive()
+                                ->stripCharacters(',')
+                                ->mask(\Filament\Support\RawJs::make('$money($input)'))
+                                ->dehydrateStateUsing(fn ($state) => $state === null ? null : str_replace(',', '', (string) $state))
                                 ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                     $set('expected_unit_price', $state);
                                 })
@@ -138,7 +141,13 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('requester.name')->label('Requested By')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('approver.name')->label('Approved By')->sortable(),
                 Tables\Columns\TextColumn::make('supplier.supplier_name')->label('Supplier')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->colors([
+                        'warning' => 'PENDING',
+                        'success' => 'APPROVED',
+                        'danger' => 'REJECTED',
+                    ]),
                 Tables\Columns\TextColumn::make('requested_at')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('handled_at')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('total_expected_amount')->label('Total Expected')->money('idr', true),
@@ -187,5 +196,35 @@ class PurchaseRequestResource extends Resource
             DetailsRelationManager::class,
             ApprovalsRelationManager::class,
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->canAccessPurchasing() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canView($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canEdit($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function canDelete($record): bool
+    {
+        return self::canViewAny();
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return self::canViewAny();
     }
 }
